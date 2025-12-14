@@ -118,7 +118,7 @@ function App() {
             setIsLocked(true);
             setGameState('locked');
             setIsTimerActive(false);
-            setToastMessage("Game over. Come back tomorrow for a new word.");
+            setToastMessage("Game over. Come back tomorrow to guess new word.");
             setShowLockModal(true);
         }
     }, [todayKey]);
@@ -246,7 +246,7 @@ function App() {
     // --- Game Submission Logic (USING API_BASE_URL) ---
     const submitGuess = useCallback(async () => {
         if (isLocked) {
-            setToastMessage("Game over. Come back tomorrow for a new word.");
+            setToastMessage("Game over. Come back tomorrow to guess new word.");
             setShowLockModal(true);
             return;
         }
@@ -401,7 +401,7 @@ function App() {
                 <div className="lock-modal-overlay" onClick={() => setShowLockModal(false)}>
                     <div className="lock-modal" onClick={(e) => e.stopPropagation()}>
                         <h3>Game over</h3>
-                        <p>Come back tomorrow for a new word.</p>
+                        <p>Come back tomorrow to guess new word.</p>
                         <button className="primary-btn" onClick={() => setShowLockModal(false)}>
                             Close
                         </button>
