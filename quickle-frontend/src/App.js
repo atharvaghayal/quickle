@@ -86,7 +86,10 @@ function App() {
     const WORD_LENGTH = 5;
 
     // --- State Management ---
-    const [theme, setTheme] = useState('dark');
+    // MODIFIED: Initialize theme from localStorage, defaulting to 'dark'
+    const [theme, setTheme] = useState(() => {
+        return localStorage.getItem('quickle_theme') || 'dark';
+    });
     const [guesses, setGuesses] = useState([]);
     const [currentGuess, setCurrentGuess] = useState('');
     const [solvedStatuses, setSolvedStatuses] = useState([]); 
@@ -147,8 +150,13 @@ function App() {
 
 
     // --- Theme Logic ---
+    // MODIFIED: Save new theme to localStorage
     const toggleTheme = () => {
-        setTheme(current => (current === 'dark' ? 'light' : 'dark'));
+        setTheme(current => {
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('quickle_theme', newTheme);
+            return newTheme;
+        });
     };
 
     // Apply theme class to the body tag
