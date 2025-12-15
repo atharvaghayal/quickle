@@ -68,6 +68,7 @@ body.light-theme {
 /* --- ICON POSITIONING --- */
 .help-icon, .theme-icon, .login-btn { 
     position: fixed; 
+    right: 20px;
     top: 20px;
     cursor: pointer;
     user-select: none;

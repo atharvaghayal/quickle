@@ -4,6 +4,9 @@ from datetime import datetime, timedelta
 import random
 from typing import Optional
 
+# --- FIX: Changed relative import (.auth) to absolute import (auth) ---
+from auth import auth_router 
+
 # --- WORD LIST DEPENDENCY ---
 # Ensure this is installed: pip install wordfreq
 try:
@@ -38,6 +41,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --- Include the Authentication Router ---
+app.include_router(auth_router, prefix="/api")
 
 # --- Global Game State & Word Logic ---
 TODAY_WORD = ""

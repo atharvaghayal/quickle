@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import './App.css'; 
-import StatsModal from './StatsModal'; // Assuming StatsModal is in a separate file
+import StatsModal from './StatsModal'; 
+// CORRECTED IMPORTS
+import { useAuth } from './auth/AuthContext'; 
+import AuthModal from './auth/AuthModal'; 
+import UserMenu from './auth/UserMenu'; 
 
 const API_BASE_URL = 'http://localhost:8000/api/wordle';
 
@@ -22,13 +26,14 @@ const ThemeButton = ({ theme, toggleTheme }) => {
 };
 
 
-// --- BitTitle Component ---
+// --- BitTitle Component (FIXED JSX ERROR) ---
 const BitTitle = ({ text }) => {
     const processedText = text.split('');
     const coloredCharacters = processedText.map((char, index) => {
         if (char === ' ' && index === 5) {
             return <span key={index} className="word-separator">&nbsp;</span>;
         }
+        // FIX IS HERE: Changed </div> to </span>
         return <span key={index} className="bit-char">{char}</span>;
     });
     return (<h1 className="title-bitcount">{coloredCharacters}</h1>);
@@ -82,11 +87,13 @@ const Toast = ({ message, type, onClose }) => {
 
 // Main App component
 function App() {
+    // USE AUTH CONTEXT
+    const { user, loading, openAuthModal } = useAuth(); 
+    
     const MAX_GUESSES = 6;
     const WORD_LENGTH = 5;
 
     // --- State Management ---
-    // MODIFIED: Initialize theme from localStorage, defaulting to 'dark'
     const [theme, setTheme] = useState(() => {
         return localStorage.getItem('quickle_theme') || 'dark';
     });
@@ -118,7 +125,7 @@ function App() {
             setIsLocked(true);
             setGameState('locked');
             setIsTimerActive(false);
-            setToastMessage("Game over. Come back tomorrow to guess new word.");
+            setToastMessage("Game over. Come back tomorrow for a new word.");
             setShowLockModal(true);
         }
     }, [todayKey]);
@@ -150,7 +157,6 @@ function App() {
 
 
     // --- Theme Logic ---
-    // MODIFIED: Save new theme to localStorage
     const toggleTheme = () => {
         setTheme(current => {
             const newTheme = current === 'dark' ? 'light' : 'dark';
@@ -246,7 +252,7 @@ function App() {
     // --- Game Submission Logic (USING API_BASE_URL) ---
     const submitGuess = useCallback(async () => {
         if (isLocked) {
-            setToastMessage("Game over. Come back tomorrow to guess new word.");
+            setToastMessage("Game over. Come back tomorrow for a new word.");
             setShowLockModal(true);
             return;
         }
@@ -355,11 +361,6 @@ function App() {
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     };
 
-    const redirectToAuth = () => {
-        // Since the backend authentication routes are removed, this button only redirects
-        window.location.href = '/auth.html'; 
-    };
-
     return (
         <div className="App">
             
@@ -367,13 +368,23 @@ function App() {
             
             <ThemeButton theme={theme} toggleTheme={toggleTheme} />
 
-            {/* Signup/Login Button (Far right) */}
-            <button 
-                className="login-btn" 
-                onClick={redirectToAuth}
-            >
-                Signup/Login
-            </button>
+            {/* CONDITIONAL RENDERING FOR AUTH/USER MENU */}
+            {loading ? (
+                // Show a placeholder while loading auth state
+                <div className="login-btn" style={{ visibility: 'hidden' }}>Loading...</div>
+            ) : user ? (
+                // If user is logged in, show the UserMenu
+                <UserMenu /> 
+            ) : (
+                // If not logged in, show the Login/Signup button that opens the modal
+                <button 
+                    className="login-btn" 
+                    onClick={openAuthModal} // Opens the AuthModal
+                >
+                    Signup/Login
+                </button>
+            )}
+            
             
             {/* Timer Display for 6th Guess */}
             {isTimerActive && (
@@ -401,7 +412,7 @@ function App() {
                 <div className="lock-modal-overlay" onClick={() => setShowLockModal(false)}>
                     <div className="lock-modal" onClick={(e) => e.stopPropagation()}>
                         <h3>Game over</h3>
-                        <p>Come back tomorrow to guess new word.</p>
+                        <p>Come back tomorrow for a new word.</p>
                         <button className="primary-btn" onClick={() => setShowLockModal(false)}>
                             Close
                         </button>
@@ -420,6 +431,9 @@ function App() {
                     isWin={gameState === 'won'}
                 />
             )}
+            
+            {/* Authentication Modal */}
+            <AuthModal />
         </div>
     );
 }

@@ -1,5 +1,8 @@
+// --- File: AuthModal.js (CORRECTED IMPORT PATH) ---
 import React, { useState } from 'react';
-import { useAuth } from './AuthContext';
+// FIX: Changed './auth/AuthContext' to './AuthContext' because AuthContext.js 
+// is in the same directory (src/auth/) as AuthModal.js
+import { useAuth } from './AuthContext'; 
 
 const AuthModal = () => {
     const { isAuthModalOpen, closeAuthModal, login, signup, startOauth } = useAuth();
@@ -24,10 +27,26 @@ const AuthModal = () => {
             setEmail('');
             setPassword('');
         } catch (err) {
-            const message =
-                err?.response?.data?.detail ||
-                err?.message ||
-                'Unable to authenticate. Please try again.';
+            let message = 'Unable to authenticate. Please try again.';
+
+            if (err.response) {
+                const data = err.response.data;
+                
+                // 1. Handle single message errors (e.g., status 409 "Username already registered")
+                if (data.detail && typeof data.detail === 'string') {
+                    message = data.detail;
+                } 
+                // 2. Handle FastAPI validation errors (e.g., status 400/422 with a list of dicts)
+                else if (data.detail && Array.isArray(data.detail)) {
+                    // Extract the message from the first validation error object
+                    message = data.detail[0].msg || message;
+                }
+                // 3. Handle general Axios/JS error message
+                else {
+                    message = err.message || message;
+                }
+            }
+            
             setError(message);
         } finally {
             setIsSubmitting(false);
@@ -49,13 +68,16 @@ const AuthModal = () => {
 
                 <form className="auth-form" onSubmit={submit}>
                     <label>
-                        Email
+                        Username (4-20 Alphanumeric chars)
                         <input
-                            type="email"
+                            type="text" 
                             value={email}
                             required
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="you@example.com"
+                            placeholder="my_unique_username"
+                            minLength={4}
+                            maxLength={20}
+                            pattern="[A-Za-z0-9]+" // Client-side check for alphanumeric
                         />
                     </label>
                     <label>
@@ -66,10 +88,10 @@ const AuthModal = () => {
                             required
                             minLength={8}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Minimum 8 characters"
+                            placeholder="Min 8 chars, incl. upper, lower, digit, special"
                         />
                     </label>
-                    {error && <div className="auth-error">{error}</div>}
+                    {error && <div className="auth-error">{error}</div>} 
                     <button type="submit" className="primary-btn" disabled={isSubmitting}>
                         {isSubmitting ? 'Please wait...' : mode === 'login' ? 'Login' : 'Sign Up'}
                     </button>
@@ -105,5 +127,3 @@ const AuthModal = () => {
 };
 
 export default AuthModal;
-
-
