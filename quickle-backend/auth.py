@@ -1,13 +1,15 @@
-# --- File: auth.py (Corrected Imports) ---
-
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
-# ... (rest of standard imports)
+from pydantic import BaseModel, Field
+from typing import Optional
+from datetime import datetime, timedelta
+import re
+
+from passlib.context import CryptContext
+
 from sqlalchemy.orm import Session
 from sqlalchemy import exc
-
-# FIX: Revert to relative imports, assuming these files are siblings
 from .database import get_db, engine
-from .models import Base, User 
+from .models import Base, User
 
 # Initialize database tables on startup
 Base.metadata.create_all(bind=engine)

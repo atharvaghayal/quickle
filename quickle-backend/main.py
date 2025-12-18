@@ -5,7 +5,7 @@ import random
 from typing import Optional
 
 # --- FIX: Changed relative import (.auth) to absolute import (auth) ---
-from auth import auth_router 
+from .auth import auth_router 
 
 # --- WORD LIST DEPENDENCY ---
 # Ensure this is installed: pip install wordfreq
