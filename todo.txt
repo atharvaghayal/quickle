@@ -1,4 +1,5 @@
 signup and login highly secure auth page.
+create profile page.
 Update Stats card.
 Leaderboard.
 Add keyboard exact like hardword.
