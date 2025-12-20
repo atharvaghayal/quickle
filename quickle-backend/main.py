@@ -13,7 +13,7 @@ app = FastAPI(title="Quickle Wordle Backend")
 
 # 1. SESSION MIDDLEWARE (Required for Google/GitHub OAuth state)
 # This must come BEFORE the router inclusion
-app.add_middleware(SessionMiddleware, secret_key="quickle_secret_1654")
+app.add_middleware(SessionMiddleware, secret_key="SESSION_SECRET_KEY")
 
 # 2. CORS MIDDLEWARE (Allows your React frontend to talk to this backend)
 app.add_middleware(
