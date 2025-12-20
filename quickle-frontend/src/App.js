@@ -33,7 +33,6 @@ const BitTitle = ({ text }) => {
         if (char === ' ' && index === 5) {
             return <span key={index} className="word-separator">&nbsp;</span>;
         }
-        // FIX IS HERE: Changed </div> to </span>
         return <span key={index} className="bit-char">{char}</span>;
     });
     return (<h1 className="title-bitcount">{coloredCharacters}</h1>);
@@ -64,8 +63,6 @@ const Row = ({ guess, solutionStatus }) => {
 
 // --- Toast Component for Notifications (FIXED STRUCTURE) ---
 const Toast = ({ message, type, onClose }) => {
-    
-    // 1. HOOKS MUST COME FIRST (to avoid conditional hook error)
     useEffect(() => {
         if (message) { 
             const timer = setTimeout(onClose, 2000); 
@@ -74,7 +71,6 @@ const Toast = ({ message, type, onClose }) => {
         return undefined; 
     }, [message, onClose]);
 
-    // 2. Conditional rendering can follow
     if (!message) return null; 
 
     return (
@@ -212,9 +208,7 @@ function App() {
     const showStatistics = useCallback(async (finalScore, isWin) => {
         const userId = 0; // Anonymous user simulation
         try {
-            // Note: This endpoint is outside the specific API_BASE_URL, keeping the full path
             const response = await axios.get(`http://localhost:8000/api/user/stats?user_id=${userId}`);
-            
             setStatsData(response.data);
             setIsStatsModalOpen(true);
         } catch (error) {
@@ -298,7 +292,6 @@ function App() {
             }
             
         } catch (error) {
-            // Handle 422 (Unprocessable Entity) error from FastAPI for invalid words
             if (error.response && error.response.status === 422) {
                 setToastMessage("Enter only meaningful 5-letter words.");
             } else {
@@ -368,23 +361,21 @@ function App() {
             
             <ThemeButton theme={theme} toggleTheme={toggleTheme} />
 
-            {/* CONDITIONAL RENDERING FOR AUTH/USER MENU */}
+            {/* NEW PROFILE ICON LOGIC */}
             {loading ? (
-                // Show a placeholder while loading auth state
                 <div className="login-btn" style={{ visibility: 'hidden' }}>Loading...</div>
             ) : user ? (
-                // If user is logged in, show the UserMenu
+                /* USER IS LOGGED IN: Show Profile Initial Icon with UserMenu */
                 <UserMenu /> 
             ) : (
-                // If not logged in, show the Login/Signup button that opens the modal
+                /* USER NOT LOGGED IN: Show Signup/Login Button */
                 <button 
                     className="login-btn" 
-                    onClick={openAuthModal} // Opens the AuthModal
+                    onClick={openAuthModal} 
                 >
                     Signup/Login
                 </button>
             )}
-            
             
             {/* Timer Display for 6th Guess */}
             {isTimerActive && (

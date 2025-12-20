@@ -609,3 +609,28 @@ body.light-theme .user-menu {
 .user-menu__item:hover {
     background: rgba(255, 255, 255, 0.05);
 }
+
+.user-profile-icon {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    width: 40px;
+    height: 40px;
+    background-color: var(--color-green); /* Your #00ff00 green */
+    color: #000; /* Black letter for contrast on green */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 1000;
+    border: 2px solid var(--color-icon-border);
+    transition: transform 0.2s ease;
+}
+
+.user-profile-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px var(--color-green);
+}
