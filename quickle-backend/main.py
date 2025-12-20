@@ -75,6 +75,63 @@ async def verify_guess(payload: dict):
         "is_correct": guess == target_word
     }
 
+from pydantic import BaseModel
+from datetime import datetime, timedelta
+
+# ... existing code ...
+
+class GameResult(BaseModel):
+    won: bool
+    points: int
+
+# ... existing code ...
+
+@app.post("/api/user/update-stats")
+async def update_stats(result: GameResult, request: Request, db: Session = Depends(get_db)):
+    session_id = request.cookies.get("session_id")
+    if not session_id:
+        return {"error": "Not logged in"}
+
+    user = db.query(User).filter(User.id == int(session_id)).first()
+    if not user:
+        return {"error": "User not found"}
+
+    stats = user.stats
+    if not stats:
+        # Create stats if not exists
+        stats = UserStats(user_id=user.id)
+        db.add(stats)
+        db.commit()
+        db.refresh(stats)
+
+    today = datetime.utcnow().date()
+    yesterday = today - timedelta(days=1)
+
+    # Update games played
+    stats.games_played += 1
+
+    # Update points
+    stats.total_points += result.points
+
+    # Update win stats
+    if result.won:
+        stats.games_won += 1
+        # Check streak
+        if stats.last_played_date and stats.last_played_date.date() == yesterday:
+            stats.current_streak += 1
+        else:
+            stats.current_streak = 1
+        if stats.current_streak > stats.max_streak:
+            stats.max_streak = stats.current_streak
+    else:
+        stats.current_streak = 0
+
+    stats.last_played_date = datetime.utcnow()
+
+    db.commit()
+
+    return {"message": "Stats updated"}
+
 # 6. USER STATS ENDPOINT
 @app.get("/api/user/stats")
 async def get_stats(request: Request, db: Session = Depends(get_db)):
@@ -86,6 +143,7 @@ async def get_stats(request: Request, db: Session = Depends(get_db)):
             "winPercentage": 0,
             "currentStreak": 0,
             "maxStreak": 0,
+            "totalPoints": 0,
             "is_logged_in": False
         }
 
@@ -93,12 +151,30 @@ async def get_stats(request: Request, db: Session = Depends(get_db)):
     if not user:
         return {"error": "User not found"}
 
+    stats = user.stats
+    if not stats:
+        return {
+            "username": user.username,
+            "gamesPlayed": 0,
+            "winPercentage": 0,
+            "currentStreak": 0,
+            "maxStreak": 0,
+            "totalPoints": 0,
+            "is_logged_in": True
+        }
+
+    win_percentage = (stats.games_won / stats.games_played * 100) if stats.games_played > 0 else 0
+
+    is_ongoing = stats.last_played_date and stats.last_played_date.date() == datetime.utcnow().date() and stats.current_streak > 0
+
     return {
         "username": user.username,
-        "gamesPlayed": 15, 
-        "winPercentage": 60,
-        "currentStreak": 5,
-        "maxStreak": 8,
+        "gamesPlayed": stats.games_played,
+        "winPercentage": round(win_percentage, 2),
+        "currentStreak": stats.current_streak,
+        "maxStreak": stats.max_streak,
+        "totalPoints": stats.total_points,
+        "currentStreakOngoing": is_ongoing,
         "is_logged_in": True
     }
 

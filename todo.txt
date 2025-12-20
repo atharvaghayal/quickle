@@ -1,5 +1,4 @@
-create profile page.
-Update Stats card.
+Update Stats card.(check tomorrow)
 Leaderboard.
 Add keyboard exact like hardword.
 decide deployment date.

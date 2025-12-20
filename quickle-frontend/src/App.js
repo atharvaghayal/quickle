@@ -291,6 +291,17 @@ function App() {
                 setTimerSeconds(0);
             }
             
+            // Update stats if user is logged in
+            if (user) {
+                const won = is_correct;
+                const points = won ? calculateScore(guessNumber, timerSeconds) : -5;
+                try {
+                    await axios.post(`${API_BASE_URL}/user/update-stats`, { won, points });
+                } catch (error) {
+                    console.error("Error updating stats:", error);
+                }
+            }
+            
         } catch (error) {
             if (error.response && error.response.status === 422) {
                 setToastMessage("Enter only meaningful 5-letter words.");

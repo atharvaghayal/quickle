@@ -28,7 +28,8 @@ class UserStats(Base):
     games_won = Column(Integer, default=0)
     current_streak = Column(Integer, default=0)
     max_streak = Column(Integer, default=0)
-    win_percentage = Column(Float, default=0.0)
+    total_points = Column(Integer, default=0)
+    last_played_date = Column(DateTime, nullable=True)
 
     # Connect back to the user
     owner = relationship("User", back_populates="stats")
