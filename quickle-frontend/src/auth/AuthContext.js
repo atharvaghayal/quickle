@@ -67,9 +67,9 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     // Oauth methods are now placeholders as the backend routes are not fully implemented
-    const startOauth = useCallback((provider) => {
-        window.location.href = `${API_BASE}/auth/oauth/${provider}/login`;
-    }, []);
+    const startOauth = (provider) => {
+        window.location.href = `http://localhost:8000/api/auth/oauth/${provider}/login`;
+    };
 
     const value = useMemo(
         () => ({
