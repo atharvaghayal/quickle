@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from './AuthContext'; 
 
 const AuthModal = () => {
-    const { isAuthModalOpen, closeAuthModal, login, signup, startOauth } = useAuth();
+    const { isAuthModalOpen, closeAuthModal, login, signup } = useAuth();
     const [mode, setMode] = useState('login'); // 'login' | 'signup'
     const [email, setEmail] = useState(''); // This state holds the string the user types
     const [password, setPassword] = useState('');
@@ -96,19 +96,6 @@ const AuthModal = () => {
         {isSubmitting ? 'Please wait...' : mode === 'login' ? 'Login' : 'Sign Up'}
     </button>
 </form>
-
-                <div className="auth-divider">
-                    <span>OR</span>
-                </div>
-
-                <div className="oauth-actions">
-                    <button className="secondary-btn oauth-google" onClick={() => startOauth('google')}>
-                        Continue with Google
-                    </button>
-                    <button className="secondary-btn oauth-github" onClick={() => startOauth('github')}>
-                        Continue with GitHub
-                    </button>
-                </div>
 
                 <div className="switch-mode">
                     {mode === 'login' ? (

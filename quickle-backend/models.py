@@ -12,6 +12,7 @@ class User(Base):
     # hashed_password will store BCrypt hashes for manual users 
     # or "OAUTH_USER_EXTERNAL" for social users
     hashed_password = Column(String, nullable=False)
+    provider = Column(String, nullable=True)  # 'local', 'google', 'github'
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationship to stats

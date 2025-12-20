@@ -19,8 +19,10 @@ const UserMenu = () => {
     // If the user object is not available (e.g., they logged out or session expired), render nothing.
     if (!user) return null;
 
-    // Use user.email as the displayed identifier, which maps to the username in the current backend
-    const initial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
+    // Use user.username as the displayed identifier
+    const initial = user.username ? user.username.charAt(0).toUpperCase() : 'U';
+
+    const providerDisplay = !user.provider ? 'Local' : (user.provider === 'local' ? 'Username/Password' : user.provider.charAt(0).toUpperCase() + user.provider.slice(1));
 
     return (
         <div className="user-menu-wrapper" ref={menuRef}>
@@ -30,12 +32,12 @@ const UserMenu = () => {
             {open && (
                 <div className="user-menu">
                     <div className="user-menu__header">
-                        <div className="user-menu__name">{user.email}</div>
-                        {/* Provider is 'local' for username/password sign-up in the new backend */}
-                        <div className="user-menu__provider">Signed in via {user.provider}</div>
+                        <div className="user-menu__name">{user.username}</div>
+                        {/* Provider display */}
+                        <div className="user-menu__provider">Signed in via {providerDisplay}</div>
                     </div>
                     {/* Placeholder for Profile button */}
-                    <button className="user-menu__item">Profile</button> 
+                    <button className="user-menu__item" onClick={() => window.location.href = '/profile.html'}>Profile</button> 
                     <button className="user-menu__item" onClick={logout}>
                         Logout
                     </button>

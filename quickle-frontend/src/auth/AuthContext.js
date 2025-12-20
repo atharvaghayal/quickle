@@ -65,12 +65,6 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
-    // Triggers the OAuth flow on the backend
-    // useCallback ensures this function doesn't change on every render
-    const startOauth = useCallback((provider) => {
-        window.location.href = `http://localhost:8000/api/auth/oauth/${provider}/login`;
-    }, []);
-
     const value = useMemo(
         () => ({
             user,
@@ -81,9 +75,8 @@ export const AuthProvider = ({ children }) => {
             signup,
             login,
             logout,
-            startOauth,
         }),
-        [user, loading, isAuthModalOpen, signup, login, logout, startOauth]
+        [user, loading, isAuthModalOpen, signup, login, logout]
     );
 
     return (
