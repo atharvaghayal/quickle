@@ -1,4 +1,3 @@
-// --- File: AuthContext.js (MODIFIED) ---
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 
@@ -16,45 +15,41 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-    // Removed: [csrfToken, setCsrfToken] and fetchCsrf/csrfHeaders as secure HTTP-only cookies handle session and CSRF protection (via samesite=Lax)
-    
-    // Function to check if a session exists
+
+    // Function to check if a session exists on the backend
     const refreshUser = useCallback(async () => {
-        console.log("Auth: Starting refresh check..."); // NEW LINE
         try {
+            // This calls the @auth_router.get("/me") route we added
             const { data } = await api.get('/auth/me');
             setUser(data.user);
-            console.log("Auth: User found. User:", data.user); // NEW LINE
-        } catch {
+        } catch (error) {
+            console.error("Auth check failed:", error);
             setUser(null);
-            console.log("Auth: No user found."); // NEW LINE
         } finally {
             setLoading(false);
-            console.log("Auth: Loading set to false."); // NEW LINE
         }
     }, []);
 
-    // Fetch user on initial load to check for existing session persistence
+    // Check for existing session when the app first loads
     useEffect(() => {
         refreshUser();
     }, [refreshUser]);
 
-    // Sign up (creates user and logs them in)
+    // Sign up a new user (changed 'email' to 'username' to match backend)
     const signup = useCallback(
-        async ({ email, password }) => {
-            // Note: The FastAPI backend maps 'email' field to 'username' for signup/login
-            await api.post('/auth/signup', { email, password });
-            await refreshUser(); // Fetch the newly logged-in user
+        async ({ username, password }) => {
+            await api.post('/auth/signup', { username, password });
+            await refreshUser(); // Fetch the newly created user session
             setIsAuthModalOpen(false);
         },
         [refreshUser]
     );
 
-    // Log in (sets the secure session cookie)
+    // Log in (changed 'email' to 'username' to match backend)
     const login = useCallback(
-        async ({ email, password }) => {
-            await api.post('/auth/login', { email, password });
-            await refreshUser(); // Fetch the newly logged-in user
+        async ({ username, password }) => {
+            await api.post('/auth/login', { username, password });
+            await refreshUser(); // Fetch the logged-in user session
             setIsAuthModalOpen(false);
         },
         [refreshUser]
@@ -62,14 +57,19 @@ export const AuthProvider = ({ children }) => {
 
     // Log out (clears the session cookie)
     const logout = useCallback(async () => {
-        await api.post('/auth/logout');
-        setUser(null);
+        try {
+            await api.post('/auth/logout');
+            setUser(null);
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
     }, []);
 
-    // Oauth methods are now placeholders as the backend routes are not fully implemented
-    const startOauth = (provider) => {
+    // Triggers the OAuth flow on the backend
+    // useCallback ensures this function doesn't change on every render
+    const startOauth = useCallback((provider) => {
         window.location.href = `http://localhost:8000/api/auth/oauth/${provider}/login`;
-    };
+    }, []);
 
     const value = useMemo(
         () => ({
@@ -86,7 +86,17 @@ export const AuthProvider = ({ children }) => {
         [user, loading, isAuthModalOpen, signup, login, logout, startOauth]
     );
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return (
+        <AuthContext.Provider value={value}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+};

@@ -1,25 +1,33 @@
-# --- File: models.py ---
-
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.sql import func
-from .database import Base
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float
+from sqlalchemy.orm import relationship
+from datetime import datetime
+# Use an absolute import to match your server startup folder
+from database import Base
 
 class User(Base):
-    """
-    Defines the 'users' table structure.
-    """
     __tablename__ = "users"
 
-    # Primary Key
     id = Column(Integer, primary_key=True, index=True)
-    
-    # Username (Used for login/email field in frontend)
-    username = Column(String(20), unique=True, index=True, nullable=False)
-    
-    # Securely Hashed Password
+    username = Column(String, unique=True, index=True, nullable=False)
+    # hashed_password will store BCrypt hashes for manual users 
+    # or "OAUTH_USER_EXTERNAL" for social users
     hashed_password = Column(String, nullable=False)
-    
-    # Metadata
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime, default=datetime.utcnow)
 
-    # Optional: You can add more user fields here (e.g., score, total_wins, etc.)
+    # Relationship to stats
+    stats = relationship("UserStats", back_populates="owner", uselist=False)
+
+class UserStats(Base):
+    __tablename__ = "user_stats"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    
+    games_played = Column(Integer, default=0)
+    games_won = Column(Integer, default=0)
+    current_streak = Column(Integer, default=0)
+    max_streak = Column(Integer, default=0)
+    win_percentage = Column(Float, default=0.0)
+
+    # Connect back to the user
+    owner = relationship("User", back_populates="stats")
