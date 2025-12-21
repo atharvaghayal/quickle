@@ -352,7 +352,7 @@ function App() {
                 setToastMessage("An unexpected error occurred.");
             }
         }
-    }, [currentGuess, guesses.length, MAX_GUESSES, timerSeconds, score, calculateScore, showStatistics, isLocked, todayKey]);
+    }, [currentGuess, guesses.length, MAX_GUESSES, timerSeconds, score, calculateScore, showStatistics, isLocked, todayKey, user]);
 
 
     // --- Keyboard Input Handler ---
