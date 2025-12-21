@@ -163,11 +163,11 @@
                 // Update UI
                 document.getElementById('avatar').textContent = initial;
                 document.getElementById('username').textContent = username;
-                document.getElementById('games-played').textContent = statsData.gamesPlayed;
-                document.getElementById('current-streak').textContent = statsData.currentStreak + (statsData.currentStreakOngoing ? '*' : '');
-                document.getElementById('max-streak').textContent = statsData.maxStreak;
-                document.getElementById('win-percentage').textContent = statsData.winPercentage + '%';
-                document.getElementById('total-points').textContent = statsData.totalPoints;
+                document.getElementById('games-played').textContent = statsData.times_played;
+                document.getElementById('current-streak').textContent = statsData.streak + (statsData.currentStreakOngoing ? '*' : '');
+                document.getElementById('max-streak').textContent = statsData.max_streak;
+                document.getElementById('win-percentage').textContent = statsData.win_percentage + '%';
+                document.getElementById('total-points').textContent = statsData.total_points;
 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('profile-content').style.display = 'block';

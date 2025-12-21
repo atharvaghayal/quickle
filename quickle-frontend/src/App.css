@@ -634,3 +634,61 @@ body.light-theme .user-menu {
     transform: scale(1.1);
     box-shadow: 0 0 10px var(--color-green);
 }
+
+/* --- Virtual Keyboard Styles --- */
+.virtual-keyboard {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--color-dark-bg);
+    padding: 10px;
+    border-top: 2px solid var(--color-gray);
+    z-index: 1000;
+}
+
+body.light-theme .virtual-keyboard {
+    background-color: var(--color-light-bg);
+    border-top-color: var(--color-gray);
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.key-btn {
+    background-color: var(--color-gray);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-icon-border);
+    border-radius: 4px;
+    padding: 12px 8px;
+    margin: 0 2px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    min-width: 32px;
+    transition: background-color 0.2s ease;
+}
+
+.key-btn:hover {
+    background-color: var(--color-yellow);
+    color: #000;
+}
+
+.key-btn:active {
+    background-color: var(--color-green);
+    color: #000;
+}
+
+.key-wide {
+    flex: 1.5;
+    max-width: 80px;
+}
+
+/* Mobile adjustments */
+.App.mobile {
+    padding-bottom: 200px; /* Space for virtual keyboard */
+}

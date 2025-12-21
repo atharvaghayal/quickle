@@ -60,6 +60,10 @@ const StatsModal = ({ stats, onClose, resetTime, formatTime, answerWord, isWin }
                         <div className="stat-label">Win %</div>
                         <div className="stat-value">{stats.win_percentage.toFixed(2)}%</div>
                     </div>
+                    <div className="stat-item">
+                        <div className="stat-label">Total Points</div>
+                        <div className="stat-value">{stats.total_points}</div>
+                    </div>
                 </div>
 
                 {!isLoggedIn && (

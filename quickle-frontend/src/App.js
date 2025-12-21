@@ -7,11 +7,41 @@ import { useAuth } from './auth/AuthContext';
 import AuthModal from './auth/AuthModal'; 
 import UserMenu from './auth/UserMenu'; 
 
-const API_BASE_URL = 'http://localhost:8000/api/wordle';
+const API_BASE_URL = 'http://localhost:8000/api';
+
+// Enable credentials for all axios requests
+axios.defaults.withCredentials = true;
 
 // --- Redirection Handler ---
 const redirectToRules = () => {
     window.location.href = '/rules.html';
+};
+
+// --- Virtual Keyboard Component ---
+const VirtualKeyboard = ({ onKeyPress }) => {
+    const rows = [
+        ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+        ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+        ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACKSPACE']
+    ];
+
+    return (
+        <div className="virtual-keyboard">
+            {rows.map((row, rowIndex) => (
+                <div key={rowIndex} className="keyboard-row">
+                    {row.map((key) => (
+                        <button
+                            key={key}
+                            className={`key-btn ${key === 'ENTER' || key === 'BACKSPACE' ? 'key-wide' : ''}`}
+                            onClick={() => onKeyPress(key)}
+                        >
+                            {key === 'BACKSPACE' ? '⌫' : key}
+                        </button>
+                    ))}
+                </div>
+            ))}
+        </div>
+    );
 };
 
 
@@ -113,6 +143,18 @@ function App() {
     const [statsData, setStatsData] = useState(null);
     const [resetTime, setResetTime] = useState(null);
     
+    // Mobile detection
+    const [isMobile, setIsMobile] = useState(false);
+    
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+    
     // --- One-play-per-day lock ---
     const todayKey = new Date().toISOString().slice(0, 10);
     useEffect(() => {
@@ -139,7 +181,7 @@ function App() {
     // --- Initial Word Fetch (USING API_BASE_URL) ---
     const fetchSystemWord = useCallback(async () => {
         try {
-            const wordResponse = await axios.get(`${API_BASE_URL}/daily-word`);
+            const wordResponse = await axios.get(`${API_BASE_URL}/wordle/daily-word`);
             setSystemWord(wordResponse.data.word || "QUICK"); 
         } catch (error) {
             console.error("Error fetching daily word:", error);
@@ -171,7 +213,7 @@ function App() {
     // --- Game Reset Time (USING API_BASE_URL) ---
     const fetchResetTime = useCallback(async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/next-reset`);
+            const response = await axios.get(`${API_BASE_URL}/wordle/next-reset`);
             setResetTime(response.data.time_remaining_seconds);
         } catch (error) {
             console.error("Error fetching reset time:", error);
@@ -206,9 +248,8 @@ function App() {
 
     // --- Statistics Modal Display ---
     const showStatistics = useCallback(async (finalScore, isWin) => {
-        const userId = 0; // Anonymous user simulation
         try {
-            const response = await axios.get(`http://localhost:8000/api/user/stats?user_id=${userId}`);
+            const response = await axios.get(`${API_BASE_URL}/user/stats`);
             setStatsData(response.data);
             setIsStatsModalOpen(true);
         } catch (error) {
@@ -218,6 +259,7 @@ function App() {
                 streak: isWin ? 1 : 0, 
                 max_streak: isWin ? 1 : 0, 
                 win_percentage: isWin ? 100.00 : 0.00, 
+                total_points: isWin ? finalScore : 0,
                 is_logged_in: false
             });
             setIsStatsModalOpen(true);
@@ -257,7 +299,7 @@ function App() {
         }
         
         try {
-            const response = await axios.post(`${API_BASE_URL}/guess`, { guess: guessWord });
+            const response = await axios.post(`${API_BASE_URL}/wordle/guess`, { guess: guessWord });
             const { status_array, is_correct } = response.data;
             
             // 1. Update Game State
@@ -314,11 +356,9 @@ function App() {
 
 
     // --- Keyboard Input Handler ---
-    const handleKeyDown = useCallback((event) => {
+    const handleKeyPress = useCallback((key) => {
         if (gameState !== 'playing' || isStatsModalOpen || isLocked) return;
         
-        const key = event.key;
-
         // 1. Handle Letter Input
         if (/^[a-zA-Z]$/.test(key) && currentGuess.length < WORD_LENGTH) {
             setCurrentGuess((prev) => prev + key.toUpperCase());
@@ -336,6 +376,10 @@ function App() {
             submitGuess();
         }
     }, [currentGuess, WORD_LENGTH, submitGuess, gameState, isStatsModalOpen, isLocked]);
+
+    const handleKeyDown = useCallback((event) => {
+        handleKeyPress(event.key);
+    }, [handleKeyPress]);
 
     // Attach keyboard listener
     useEffect(() => {
@@ -366,7 +410,7 @@ function App() {
     };
 
     return (
-        <div className="App">
+        <div className={`App ${isMobile ? 'mobile' : ''}`}>
             
             <div className="help-icon" onClick={redirectToRules}>?</div>
             
@@ -401,6 +445,9 @@ function App() {
             </header>
             
             <div className="board">{boardRows}</div>
+
+            {/* Virtual Keyboard for Mobile */}
+            {isMobile && <VirtualKeyboard onKeyPress={handleKeyPress} />}
 
             {/* Toast Notification */}
             <Toast 

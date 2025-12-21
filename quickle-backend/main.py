@@ -132,18 +132,17 @@ async def update_stats(result: GameResult, request: Request, db: Session = Depen
 
     return {"message": "Stats updated"}
 
-# 6. USER STATS ENDPOINT
 @app.get("/api/user/stats")
 async def get_stats(request: Request, db: Session = Depends(get_db)):
     session_id = request.cookies.get("session_id")
     
     if not session_id:
         return {
-            "gamesPlayed": 0,
-            "winPercentage": 0,
-            "currentStreak": 0,
-            "maxStreak": 0,
-            "totalPoints": 0,
+            "times_played": 0,
+            "streak": 0,
+            "max_streak": 0,
+            "win_percentage": 0,
+            "total_points": 0,
             "is_logged_in": False
         }
 
@@ -155,11 +154,11 @@ async def get_stats(request: Request, db: Session = Depends(get_db)):
     if not stats:
         return {
             "username": user.username,
-            "gamesPlayed": 0,
-            "winPercentage": 0,
-            "currentStreak": 0,
-            "maxStreak": 0,
-            "totalPoints": 0,
+            "times_played": 0,
+            "streak": 0,
+            "max_streak": 0,
+            "win_percentage": 0,
+            "total_points": 0,
             "is_logged_in": True
         }
 
@@ -169,11 +168,11 @@ async def get_stats(request: Request, db: Session = Depends(get_db)):
 
     return {
         "username": user.username,
-        "gamesPlayed": stats.games_played,
-        "winPercentage": round(win_percentage, 2),
-        "currentStreak": stats.current_streak,
-        "maxStreak": stats.max_streak,
-        "totalPoints": stats.total_points,
+        "times_played": stats.games_played,
+        "streak": stats.current_streak,
+        "max_streak": stats.max_streak,
+        "win_percentage": round(win_percentage, 2),
+        "total_points": stats.total_points,
         "currentStreakOngoing": is_ongoing,
         "is_logged_in": True
     }
