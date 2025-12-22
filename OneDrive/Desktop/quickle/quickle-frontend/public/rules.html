@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quickle Rules card</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-dark-bg: #000000;
+            --color-green: #00ff00;
+            --color-yellow: #ffff00;
+            --color-gray: #555555;
+            --color-text-light: #ffffff;
+            --color-card-bg: #111;
+        }
+
+        /* --- New Overlay Styles --- */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); /* Dark background for modal effect */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 9999;
+        }
+
+        body {
+            /* Keep body minimal as the overlay covers everything */
+            background-color: var(--color-dark-bg);
+            color: var(--color-text-light);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .rules-container {
+            /* Styling for the card itself */
+            background-color: var(--color-card-bg);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5); /* Added subtle glow for visibility */
+            /* Ensure the content fits when resizing */
+            max-height: 95vh; 
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+        }
+
+        /* --- Content Styling (Unchanged) --- */
+        .rules-container h1 {
+            color: var(--color-yellow);
+            font-family: 'Bitcount Prop Single', monospace;
+            font-weight: 300;
+            font-size: 2.5em;
+            text-align: center;
+            margin-top: 0;
+            text-shadow: 0 0 5px var(--color-yellow);
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            color: #ddd;
+        }
+        
+        .section h2 {
+            color: var(--color-green);
+            border-bottom: 1px dashed var(--color-gray);
+            padding-bottom: 5px;
+            margin-top: 25px;
+            font-size: 1.2em;
+        }
+
+        ul {
+            list-style-type: '⚡ ';
+            padding-left: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        th, td {
+            border: 1px solid var(--color-gray);
+            padding: 5px 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #222;
+            color: var(--color-yellow);
+        }
+
+        .time-points {
+            padding: 10px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            margin-top: 15px;
+        }
+        
+        .penalty {
+            color: #ff3333;
+            font-weight: bold;
+        }
+
+        .back-link {
+            /* This link now serves as the explicit close button */
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.1em;
+            color: var(--color-text-light);
+            text-decoration: none;
+            border: 1px solid var(--color-text-light);
+            padding: 8px 15px;
+            width: 150px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Added Close Button Styling */
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: 2px solid var(--color-text-light);
+            color: var(--color-text-light);
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 2px 8px;
+            line-height: 1;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" onclick="goBackToGame()">
+        
+        <div class="rules-container" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="goBackToGame()">X</button>
+
+            <h1>🎮 QUICKLE – RULES CARD</h1>
+            <p class="subtitle">A daily 5-letter guessing challenge with twists &amp; timing!</p>
+            
+            <div class="section">
+                <h2>🕹️ HOW TO PLAY</h2>
+                <ul>
+                    <li>Guess the 5-letter hidden word within 6 total attempts.</li>
+                    <li>Each guess gives you feedback to help you move closer to the solution.</li>
+                    <li>Letter with 🟢 color indicates letter in correct place.</li>
+                    <li>Letter with 🟡 color indicates letter exists in word but at wrong place.</li>
+                    <li>Letter with ⚫ color indicates that letter dosen't exists in the word.</li>
+                    <li>Fewer guesses = higher points!</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>🏅 POINTS SYSTEM (Attempts 1–5)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Guess Number</th>
+                            <th>Points Earned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1st Guess</td><td>25 pts</td></tr>
+                        <tr><td>2nd Guess</td><td>18 pts</td></tr>
+                        <tr><td>3rd Guess</td><td>15 pts</td></tr>
+                        <tr><td>4th Guess</td><td>12 pts</td></tr>
+                        <tr><td>5th Guess</td><td>6 pts</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2>⏱️ THE FINAL TWIST – TIMED 6th GUESS</h2>
+                <p>If you still haven’t cracked the word after 5 tries, you get one last chance under strict time pressure!</p>
+
+                <div class="time-points">
+                    <p>⏳ 0–5 sec → 5 pts 💨</p>
+                    <p>⏳ 6–9 sec → 3 pts</p>
+                    <p>⏳ 10–12 sec → 1 pt 🐢</p>
+                    <p>⏳ &gt;12 sec → 0 pts ❌</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>❗ IF YOU FAIL ALL 6 GUESSES, "LIFE IS UNFAIR"</h2>
+                <p>A small penalty is added to you score.</p>
+                <p class="penalty">
+                    ➤ Point Deduction: –5 points 🔻
+                </p>
+                <p>If your score is already 0 and you fail to guess, your score becomes –5 points.</p>
+            </div>
+
+            <a href="#" onclick="goBackToGame(); return false;" class="back-link">← Back to Game</a>
+            <p style="text-align: center; margin-top: 15px;">
+                Quickle-Word Game | Built with ❤️ by Atharva Ghayal
+            </p>
+        </div>
+        
+    </div>
+    
+    <script>
+        // Function to navigate back to the game page (Root path)
+        function goBackToGame() {
+            window.location.href = '/';
+        }
+
+        // Global Event listener to detect the ESC key
+        document.addEventListener('keyup', function(event) {
+            if (event.keyCode === 27 || event.key === 'Escape') {
+                goBackToGame();
+            }
+        });
+    </script>
+</body>
+</html>
