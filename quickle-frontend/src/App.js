@@ -315,6 +315,18 @@ function App() {
                 setIsLocked(true);
                 localStorage.setItem('quickle_play_date', todayKey);
                 setShowLockModal(true);
+                
+                // Update stats if user is logged in BEFORE showing stats
+                if (user) {
+                    const won = true;
+                    const points = calculateScore(guessNumber, timerSeconds);
+                    try {
+                        await axios.post(`${API_BASE_URL}/user/update-stats`, { won, points });
+                    } catch (error) {
+                        console.error("Error updating stats:", error);
+                    }
+                }
+                
                 showStatistics(finalScore, true);
             
             } else if (guessNumber === MAX_GUESSES) {
@@ -326,6 +338,18 @@ function App() {
                 setIsLocked(true);
                 localStorage.setItem('quickle_play_date', todayKey);
                 setShowLockModal(true);
+                
+                // Update stats if user is logged in BEFORE showing stats
+                if (user) {
+                    const won = false;
+                    const points = -5;
+                    try {
+                        await axios.post(`${API_BASE_URL}/user/update-stats`, { won, points });
+                    } catch (error) {
+                        console.error("Error updating stats:", error);
+                    }
+                }
+                
                 showStatistics(finalScore, false);
             
             } else if (guessNumber === MAX_GUESSES - 1) {
@@ -333,16 +357,7 @@ function App() {
                 setTimerSeconds(0);
             }
             
-            // Update stats if user is logged in
-            if (user) {
-                const won = is_correct;
-                const points = won ? calculateScore(guessNumber, timerSeconds) : -5;
-                try {
-                    await axios.post(`${API_BASE_URL}/user/update-stats`, { won, points });
-                } catch (error) {
-                    console.error("Error updating stats:", error);
-                }
-            }
+            // Remove the duplicate update stats call here
             
         } catch (error) {
             if (error.response && error.response.status === 422) {

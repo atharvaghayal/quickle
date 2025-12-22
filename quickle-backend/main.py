@@ -17,8 +17,11 @@ print(f"DEBUG: Google ID is {os.getenv('GOOGLE_CLIENT_ID')}")
 # 2. IMPORT INTERNAL MODULES
 # Using absolute imports (no dots) to prevent 'ImportError'
 from auth import auth_router
-from database import get_db
-from models import User
+from database import get_db, engine
+from models import User, UserStats, Base
+
+# Create tables
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Quickle Wordle Backend")
 
