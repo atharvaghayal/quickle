@@ -1,0 +1,694 @@
+/* --- 1. Font Integration --- */
+
+@import url('https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&display=swap');
+
+/* --- 2. Color Variables --- */
+:root {
+  /* DARK THEME DEFAULTS */
+  --color-dark-bg: #000000;
+  --color-text-primary: #ffffff;
+  --color-icon-border: #ffffff;
+  
+  /* NEW/UPDATED TILE VARIABLES (Default to Dark Theme) */
+  --color-tile-bg: var(--color-dark-bg);
+  --color-tile-letter: var(--color-text-primary); 
+  --color-absent-border: #555555; /* Fixed Grey border for absent letters */
+  --color-empty-border: var(--color-text-primary); /* White border for empty/typing */
+  
+  /* LIGHT THEME VARIABLES */
+  --color-light-bg: #f8f8f8; /* Cream/Off-White */
+  --color-light-text-primary: #000000;
+  
+  /* GAME STATUS COLORS (Keep these consistent between themes) */
+  --color-green: #00ff00;
+  --color-yellow: #ffff00;
+  --color-gray: #555555;
+}
+
+/* --- Base Styles --- */
+body {
+  background-color: var(--color-dark-bg);
+  color: var(--color-text-primary);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Courier New', Courier, monospace; 
+}
+
+/* --- LIGHT THEME OVERRIDES --- */
+body.light-theme {
+    /* Sets the background for the entire page */
+    background-color: var(--color-light-bg);
+    color: var(--color-light-text-primary);
+    
+    /* Global Variables */
+    --color-text-primary: var(--color-light-text-primary); /* Black text */
+    --color-icon-border: var(--color-light-text-primary); /* Black icons/borders */
+
+    /* TILE/BLOCK OVERRIDES */
+    --color-tile-bg: var(--color-light-bg); /* Off-white block background */
+    --color-tile-letter: var(--color-light-text-primary); /* Black letters */
+    --color-empty-border: var(--color-light-text-primary); /* Black border for empty/typing */
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  position: static; 
+  /* CRITICAL: Ensure .App is transparent to show body background */
+  background-color: transparent; 
+}
+
+/* --- ICON STYLING (Fixed to Viewport) --- */
+/* --- ICON POSITIONING --- */
+.help-icon, .theme-icon, .login-btn { 
+    position: fixed; 
+    right: 20px;
+    top: 20px;
+    cursor: pointer;
+    user-select: none;
+    z-index: 1000; 
+    
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-icon-border);
+}
+
+.help-icon {
+    left: 20px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 1.5em;
+    font-weight: bold;
+    line-height: 28px;
+    text-align: center;
+    text-shadow: 0 0 5px var(--color-icon-border);
+}
+
+/* --- Login/Signup Button (Now acting as the far-right anchor) --- */
+.login-btn {
+    right: 20px; /* Aligned to the far right */
+    padding: 5px 10px;
+    background: none;
+    font-size: 0.9em;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    border-radius: 4px;
+    
+    /* Ensure the button is sized normally */
+    width: auto; 
+    height: auto; 
+    line-height: normal; /* Override icon specific line-height */
+
+    text-shadow: 0 0 5px var(--color-icon-border);
+}
+
+/* --- Theme Toggle Icon (Positioned LEFT of the login button) --- */
+.theme-icon {
+    right: 160px; /* Pushes the icon leftward based on the button's presence */
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 1.1em;
+    line-height: 28px;
+    text-align: center;
+    text-shadow: 0 0 5px var(--color-icon-border);
+}
+
+/* --- LIGHT THEME ICON OVERRIDE: Remove Shadow --- */
+body.light-theme .help-icon, 
+body.light-theme .theme-icon, 
+body.light-theme .login-btn {
+    text-shadow: none;
+}
+
+body.light-theme .login-btn {
+    background: transparent; 
+}
+
+
+/* --- Header/Title Styling --- */
+.header {
+  margin-bottom: 60px; /* Increased gap from board */
+  text-align: center;
+}
+
+.title-bitcount {
+  font-family: 'Bitcount Prop Single', monospace; 
+  font-weight: 300; 
+  font-size: 4em;
+  letter-spacing: 0.05em; /* Tighter letter spacing */
+  margin: 0;
+  line-height: 1;
+  color: var(--color-text-primary);
+  user-select: none;
+}
+
+/* Character-specific styling */
+.bit-char {
+  display: inline-block;
+  text-shadow: 0 0 5px var(--color-text-primary), 
+               0 0 10px rgba(255, 255, 255, 0.5); 
+}
+
+/* --- LIGHT THEME TITLE OVERRIDE: Remove Neon Glow --- */
+body.light-theme .bit-char {
+    text-shadow: none;
+}
+
+.word-separator {
+    display: inline-block;
+    width: 0;
+    margin-right: 0.5em; /* Gap between 'D' and 'W' */
+    text-shadow: none;
+}
+
+/* Score and Timer Display */
+.score-display, .timer-display {
+    font-size: 1.2em;
+    margin-top: 10px;
+    color: var(--color-yellow);
+    text-shadow: 0 0 3px var(--color-yellow);
+}
+body.light-theme .score-display,
+body.light-theme .timer-display {
+    text-shadow: none;
+    color: var(--color-light-text-primary);
+}
+
+/* ---------------------------------
+   --- BOARD/TILE STYLING ---
+   --------------------------------- */
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; 
+}
+
+.row {
+  display: flex;
+  gap: 8px; 
+}
+
+.tile {
+  width: 60px; 
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5em; 
+  font-weight: bold;
+  text-transform: uppercase;
+  box-sizing: border-box; 
+  
+  /* Tile Background blends with page background */
+  background: var(--color-tile-bg); 
+  
+  /* Default letter color (for typing/absent) */
+  color: var(--color-tile-letter); 
+  
+  /* Default border color (for empty/typing) */
+  border: 4px solid var(--color-empty-border); 
+}
+
+/* STATUS-SPECIFIC STYLING */
+.tile.correct {
+  border: 4px solid var(--color-green);
+  color: var(--color-green);
+  background: var(--color-tile-bg); 
+}
+
+.tile.present {
+  border: 4px solid var(--color-yellow);
+  color: var(--color-yellow);
+  background: var(--color-tile-bg); 
+}
+
+.tile.absent {
+  color: var(--color-tile-letter); 
+  /* Border turns gray in BOTH themes */
+  border: 4px solid var(--color-absent-border); 
+  background: var(--color-tile-bg); 
+}
+
+/* Empty/Typing */
+.tile.empty, .tile.typing {
+  color: var(--color-tile-letter);
+  border: 4px solid var(--color-empty-border); 
+  background: var(--color-tile-bg); 
+}
+.tile.empty {
+  color: transparent; /* No letter shown for truly empty tiles */
+}
+
+/* ---------------------------------
+   --- STATS MODAL STYLING ---
+   --------------------------------- */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 10px;
+}
+
+.stats-card {
+    background-color: #1a1a1a;
+    border: 2px solid var(--color-text-primary);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    padding: 25px;
+    width: 90%;
+    max-width: 450px;
+    color: var(--color-text-primary);
+    position: relative;
+    box-sizing: border-box;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+}
+
+/* Light Theme Modal Override */
+body.light-theme .stats-card {
+    background-color: #fff;
+    border-color: var(--color-light-text-primary);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.stats-card h2 {
+    color: var(--color-green);
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    text-shadow: 0 0 5px var(--color-green);
+}
+body.light-theme .stats-card h2 {
+    text-shadow: none;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: 2px solid var(--color-icon-border);
+    color: var(--color-text-primary);
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 2px 8px;
+    line-height: 1;
+    user-select: none;
+}
+
+/* Answer Reveal */
+.answer-reveal {
+    margin-bottom: 25px;
+    font-size: 1.1em;
+    color: #f33;
+}
+.actual-answer {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--color-yellow);
+    text-transform: uppercase;
+}
+
+/* Stats Row (Horizontal Line) */
+.stats-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    margin: 20px 0;
+    padding: 15px 0;
+    border-top: 1px solid var(--color-gray);
+    border-bottom: 1px solid var(--color-gray);
+}
+
+.stat-item {
+    text-align: center;
+}
+.stat-label {
+    font-size: 0.9em;
+    color: #bbb;
+    margin-bottom: 5px;
+}
+.stat-value {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--color-text-primary);
+}
+
+/* Login Prompt */
+.login-prompt {
+    font-style: italic;
+    color: var(--color-yellow);
+    margin: 20px 0;
+    padding: 10px;
+    border: 1px dashed var(--color-gray);
+}
+
+/* Countdown Section */
+.countdown-section {
+    margin-top: 30px;
+}
+.countdown-timer {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--color-green);
+    text-shadow: 0 0 5px var(--color-green);
+    margin-top: 5px;
+}
+body.light-theme .countdown-timer {
+    text-shadow: none;
+}
+
+.footer-credit {
+    margin-top: 20px;
+    font-size: 0.75em;
+    color: #999;
+}
+
+/* --- LOCK MODAL --- */
+.lock-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20000;
+    padding: 16px;
+}
+
+.lock-modal {
+    background: #111;
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-icon-border);
+    padding: 20px;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+body.light-theme .lock-modal {
+    background: #fff;
+    color: var(--color-light-text-primary);
+}
+
+/* --- AUTH MODAL --- */
+.auth-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 15000;
+    padding: 16px;
+}
+
+.auth-modal {
+    background: #000000; /* Pure black background */
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-icon-border);
+    padding: 30px;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); /* Slight green glow */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+body.light-theme .auth-modal {
+    background: #fff;
+    color: var(--color-light-text-primary);
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Vertical gap between fields */
+    width: 100%;
+}
+
+.auth-form label {
+    display: flex;
+    flex-direction: column; /* Force Stack: Label text above Input */
+    align-items: flex-start;
+    font-size: 0.85rem;
+    color: #888; /* Dimmer label text */
+    gap: 8px;
+    width: 100%;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 12px;
+    background: #111; /* Dark input background */
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    box-sizing: border-box; /* Ensures padding doesn't break width */
+}
+
+.auth-modal .primary-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    background: var(--color-green);
+    color: #000;
+    border: none;
+    font-size: 1em;
+    letter-spacing: 1px;
+}
+
+.primary-btn, .secondary-btn {
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 2px solid var(--color-icon-border);
+    background: var(--color-green);
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.secondary-btn {
+    width: 100%;
+    background: transparent;
+    color: inherit;
+}
+
+.auth-divider {
+    text-align: center;
+    margin: 10px 0;
+    position: relative;
+}
+
+.auth-divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: #333;
+    z-index: 0;
+}
+
+.auth-divider span {
+    background: #111; /* Matches modal bg */
+    padding: 0 10px;
+    position: relative;
+    z-index: 1;
+    color: #666;
+    font-size: 0.8em;
+}
+
+.auth-error {
+    color: #ff6b6b;
+    font-size: 0.9em;
+}
+
+.oauth-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.switch-mode {
+    margin-top: 12px;
+    text-align: center;
+}
+
+.switch-mode button {
+    border: none;
+    background: none;
+    color: var(--color-yellow);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* --- USER MENU --- */
+.user-menu-wrapper {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    z-index: 1200;
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--color-green);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+    border: 2px solid var(--color-icon-border);
+}
+
+.user-menu {
+    position: absolute;
+    right: 0;
+    margin-top: 8px;
+    background: #111;
+    border: 1px solid var(--color-icon-border);
+    min-width: 200px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+body.light-theme .user-menu {
+    background: #fff;
+}
+
+.user-menu__header {
+    padding: 12px;
+    border-bottom: 1px solid var(--color-gray);
+}
+
+.user-menu__name {
+    font-weight: bold;
+    word-break: break-all;
+}
+
+.user-menu__provider {
+    font-size: 0.85em;
+    color: var(--color-gray);
+}
+
+.user-menu__item {
+    width: 100%;
+    background: none;
+    color: inherit;
+    border: none;
+    text-align: left;
+    padding: 12px;
+    cursor: pointer;
+}
+
+.user-menu__item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.user-profile-icon {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    width: 40px;
+    height: 40px;
+    background-color: var(--color-green); /* Your #00ff00 green */
+    color: #000; /* Black letter for contrast on green */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 1000;
+    border: 2px solid var(--color-icon-border);
+    transition: transform 0.2s ease;
+}
+
+.user-profile-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px var(--color-green);
+}
+
+/* --- Virtual Keyboard Styles --- */
+.virtual-keyboard {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--color-dark-bg);
+    padding: 10px;
+    border-top: 2px solid var(--color-gray);
+    z-index: 1000;
+}
+
+body.light-theme .virtual-keyboard {
+    background-color: var(--color-light-bg);
+    border-top-color: var(--color-gray);
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.key-btn {
+    background-color: var(--color-gray);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-icon-border);
+    border-radius: 4px;
+    padding: 12px 8px;
+    margin: 0 2px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    min-width: 32px;
+    transition: background-color 0.2s ease;
+}
+
+.key-btn:hover {
+    background-color: var(--color-yellow);
+    color: #000;
+}
+
+.key-btn:active {
+    background-color: var(--color-green);
+    color: #000;
+}
+
+.key-wide {
+    flex: 1.5;
+    max-width: 80px;
+}
+
+/* Mobile adjustments */
+.App.mobile {
+    padding-bottom: 200px; /* Space for virtual keyboard */
+}
