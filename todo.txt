@@ -9,6 +9,7 @@ untill both 2 are perfectly working, then........
 
 if user visits page within or before new day after playing game,the game should should freeze with all guesses user did in his last game untill new day comes!! then game over card should pop up,and then the stats card should popup again..
 on next day, again user can play to find new word!!
+✅ IMPLEMENTED: Game state persistence, freeze on revisit, modal sequence, daily reset
 
 add keyboard on all kind of devices that user can play, in such a way 
 that, when user types the letter key then the light glowing should also 

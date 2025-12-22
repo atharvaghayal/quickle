@@ -132,6 +132,7 @@ function App() {
     const [toastMessage, setToastMessage] = useState(null); 
     const [isLocked, setIsLocked] = useState(false); // Device-level one-play lock
     const [showLockModal, setShowLockModal] = useState(false);
+    const [showGameOverModal, setShowGameOverModal] = useState(false);
     
     // 6th Guess Timer State
     const [timerSeconds, setTimerSeconds] = useState(0);
@@ -145,6 +146,43 @@ function App() {
     
     // Mobile detection
     const [isMobile, setIsMobile] = useState(false);
+
+    // --- Game State Persistence ---
+    const saveGameState = useCallback((gameData) => {
+        const todayKey = new Date().toISOString().slice(0, 10);
+        const gameStateData = {
+            guesses: gameData.guesses || guesses,
+            solvedStatuses: gameData.solvedStatuses || solvedStatuses,
+            gameState: gameData.gameState || gameState,
+            score: gameData.score || score,
+            systemWord: gameData.systemWord || systemWord,
+            date: todayKey
+        };
+        localStorage.setItem('quickle_game_state', JSON.stringify(gameStateData));
+    }, [guesses, solvedStatuses, gameState, score, systemWord]);
+
+    const loadGameState = useCallback(() => {
+        const todayKey = new Date().toISOString().slice(0, 10);
+        const savedState = localStorage.getItem('quickle_game_state');
+        
+        if (savedState) {
+            const gameStateData = JSON.parse(savedState);
+            if (gameStateData.date === todayKey) {
+                setGuesses(gameStateData.guesses || []);
+                setSolvedStatuses(gameStateData.solvedStatuses || []);
+                setGameState(gameStateData.gameState || 'playing');
+                setScore(gameStateData.score || 0);
+                setSystemWord(gameStateData.systemWord || '');
+                setIsLocked(gameStateData.gameState !== 'playing');
+                
+                return true; // Game state was loaded
+            } else {
+                // Different day, clear old state
+                localStorage.removeItem('quickle_game_state');
+            }
+        }
+        return false; // No valid saved state
+    }, []);
     
     useEffect(() => {
         const checkMobile = () => {
@@ -155,17 +193,70 @@ function App() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
     
-    // --- One-play-per-day lock ---
+    // --- One-play-per-day lock and Game State Loading ---
     const todayKey = new Date().toISOString().slice(0, 10);
     useEffect(() => {
-        const lastPlayed = localStorage.getItem('quickle_play_date');
-        if (lastPlayed === todayKey) {
-            setIsLocked(true);
-            setGameState('locked');
-            setIsTimerActive(false);
-            setToastMessage("Game over. Come back tomorrow for a new word.");
-            setShowLockModal(true);
+        // First try to load saved game state
+        const hasSavedState = loadGameState();
+        
+        // If no saved state, check if already played today
+        if (!hasSavedState) {
+            const lastPlayed = localStorage.getItem('quickle_play_date');
+            if (lastPlayed === todayKey) {
+                setIsLocked(true);
+                setGameState('locked');
+                setIsTimerActive(false);
+                setToastMessage("Game over. Come back tomorrow for a new word.");
+                setShowLockModal(true);
+            } else if (lastPlayed && lastPlayed !== todayKey) {
+                // New day has started, clear old game state
+                localStorage.removeItem('quickle_game_state');
+                localStorage.removeItem('quickle_play_date');
+            }
         }
+    }, [todayKey, loadGameState]);
+
+    // --- Show modals for completed saved games ---
+    useEffect(() => {
+        if (isLocked && (gameState === 'won' || gameState === 'lost') && !showGameOverModal && !isStatsModalOpen) {
+            // Show game over modal after a short delay
+            const timer = setTimeout(() => {
+                setShowGameOverModal(true);
+            }, 1000); // 1 second delay
+            return () => clearTimeout(timer);
+        }
+    }, [isLocked, gameState, showGameOverModal, isStatsModalOpen]);
+
+    // --- Day Change Detection ---
+    useEffect(() => {
+        const checkDayChange = () => {
+            const currentDate = new Date().toISOString().slice(0, 10);
+            if (currentDate !== todayKey) {
+                // Day has changed, clear saved state and reset game
+                localStorage.removeItem('quickle_game_state');
+                localStorage.removeItem('quickle_play_date');
+                setGuesses([]);
+                setCurrentGuess('');
+                setSolvedStatuses([]);
+                setGameState('playing');
+                setScore(0);
+                setIsLocked(false);
+                setShowGameOverModal(false);
+                setIsStatsModalOpen(false);
+                setToastMessage(null);
+                return true;
+            }
+            return false;
+        };
+
+        // Check every minute
+        const interval = setInterval(() => {
+            if (checkDayChange()) {
+                clearInterval(interval);
+            }
+        }, 60000);
+
+        return () => clearInterval(interval);
     }, [todayKey]);
 
     // Allow closing the lock modal with Escape
@@ -314,7 +405,18 @@ function App() {
                 setIsTimerActive(false);
                 setIsLocked(true);
                 localStorage.setItem('quickle_play_date', todayKey);
-                setShowLockModal(true);
+                
+                // Save game state
+                saveGameState({
+                    guesses: [...guesses, guessWord],
+                    solvedStatuses: [...solvedStatuses, status_array],
+                    gameState: 'won',
+                    score: finalScore,
+                    systemWord
+                });
+                
+                // Show game over modal first
+                setShowGameOverModal(true);
                 
                 // Update stats if user is logged in BEFORE showing stats
                 if (user) {
@@ -326,8 +428,6 @@ function App() {
                         console.error("Error updating stats:", error);
                     }
                 }
-                
-                showStatistics(finalScore, true);
             
             } else if (guessNumber === MAX_GUESSES) {
                 const penaltyAmount = 5;
@@ -337,7 +437,18 @@ function App() {
                 setIsTimerActive(false);
                 setIsLocked(true);
                 localStorage.setItem('quickle_play_date', todayKey);
-                setShowLockModal(true);
+                
+                // Save game state
+                saveGameState({
+                    guesses: [...guesses, guessWord],
+                    solvedStatuses: [...solvedStatuses, status_array],
+                    gameState: 'lost',
+                    score: finalScore,
+                    systemWord
+                });
+                
+                // Show game over modal first
+                setShowGameOverModal(true);
                 
                 // Update stats if user is logged in BEFORE showing stats
                 if (user) {
@@ -367,12 +478,12 @@ function App() {
                 setToastMessage("An unexpected error occurred.");
             }
         }
-    }, [currentGuess, guesses.length, MAX_GUESSES, timerSeconds, score, calculateScore, showStatistics, isLocked, todayKey, user]);
+    }, [currentGuess, guesses, solvedStatuses, guesses.length, MAX_GUESSES, timerSeconds, score, calculateScore, showStatistics, isLocked, todayKey, user, systemWord, saveGameState]);
 
 
     // --- Keyboard Input Handler ---
     const handleKeyPress = useCallback((key) => {
-        if (gameState !== 'playing' || isStatsModalOpen || isLocked) return;
+        if (gameState !== 'playing' || isStatsModalOpen || isLocked || showGameOverModal) return;
         
         // 1. Handle Letter Input
         if (/^[a-zA-Z]$/.test(key) && currentGuess.length < WORD_LENGTH) {
@@ -390,7 +501,7 @@ function App() {
         if (key === 'Enter' && currentGuess.length === WORD_LENGTH) {
             submitGuess();
         }
-    }, [currentGuess, WORD_LENGTH, submitGuess, gameState, isStatsModalOpen, isLocked]);
+    }, [currentGuess, WORD_LENGTH, submitGuess, gameState, isStatsModalOpen, isLocked, showGameOverModal]);
 
     const handleKeyDown = useCallback((event) => {
         handleKeyPress(event.key);
@@ -479,6 +590,27 @@ function App() {
                         <p>Come back tomorrow for a new word.</p>
                         <button className="primary-btn" onClick={() => setShowLockModal(false)}>
                             Close
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Game Over Modal */}
+            {showGameOverModal && (
+                <div className="lock-modal-overlay" onClick={() => {
+                    setShowGameOverModal(false);
+                    // Show stats modal after game over modal closes
+                    showStatistics(score, gameState === 'won');
+                }}>
+                    <div className="lock-modal" onClick={(e) => e.stopPropagation()}>
+                        <h3>Game over</h3>
+                        <p>Come back tomorrow for a new word.</p>
+                        <button className="primary-btn" onClick={() => {
+                            setShowGameOverModal(false);
+                            // Show stats modal after game over modal closes
+                            showStatistics(score, gameState === 'won');
+                        }}>
+                            View Stats
                         </button>
                     </div>
                 </div>
