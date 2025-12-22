@@ -182,8 +182,12 @@ async def get_stats(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/")
 async def root():
+<<<<<<< HEAD
     return {"message": "Quickle API is running"}
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+=======
+    return {"message": "Quickle API is running"}
+>>>>>>> 0fa41fdee1a6c8f54ef2c1ed926472e2774c0fe8
