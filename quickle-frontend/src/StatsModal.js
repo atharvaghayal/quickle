@@ -24,8 +24,8 @@ const StatsModal = ({ stats, onClose, resetTime, formatTime, answerWord, isWin }
         stats.win_percentage = isWin ? 100.00 : 0.00;
     }
 
-    const streakDisplay = stats.streak === 1 ? '1*' : stats.streak.toString();
-    const maxStreakDisplay = stats.max_streak === 1 ? '1*' : stats.max_streak.toString();
+    const streakDisplay = stats.currentStreakOngoing ? `${stats.streak}*` : stats.streak.toString();
+    const maxStreakDisplay = stats.max_streak.toString();
 
     const headerText = isWin ? '🥳 CONGRATULATIONS! 🥳' : 'GAME OVER';
     const headerClass = isWin ? 'win-header' : 'loss-header';

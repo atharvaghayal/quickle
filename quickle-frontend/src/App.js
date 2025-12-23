@@ -175,6 +175,13 @@ function App() {
                 setSystemWord(gameStateData.systemWord || '');
                 setIsLocked(gameStateData.gameState !== 'playing');
                 
+                // Show game over modal for completed games on page load
+                if (gameStateData.gameState === 'won' || gameStateData.gameState === 'lost') {
+                    setTimeout(() => {
+                        setShowGameOverModal(true);
+                    }, 1000); // 1 second delay
+                }
+                
                 return true; // Game state was loaded
             } else {
                 // Different day, clear old state
@@ -216,48 +223,8 @@ function App() {
         }
     }, [todayKey, loadGameState]);
 
-    // --- Show modals for completed saved games ---
-    useEffect(() => {
-        if (isLocked && (gameState === 'won' || gameState === 'lost') && !showGameOverModal && !isStatsModalOpen) {
-            // Show game over modal after a short delay
-            const timer = setTimeout(() => {
-                setShowGameOverModal(true);
-            }, 1000); // 1 second delay
-            return () => clearTimeout(timer);
-        }
-    }, [isLocked, gameState, showGameOverModal, isStatsModalOpen]);
-
-    // --- Day Change Detection ---
-    useEffect(() => {
-        const checkDayChange = () => {
-            const currentDate = new Date().toISOString().slice(0, 10);
-            if (currentDate !== todayKey) {
-                // Day has changed, clear saved state and reset game
-                localStorage.removeItem('quickle_game_state');
-                localStorage.removeItem('quickle_play_date');
-                setGuesses([]);
-                setCurrentGuess('');
-                setSolvedStatuses([]);
-                setGameState('playing');
-                setScore(0);
-                setIsLocked(false);
-                setShowGameOverModal(false);
-                setIsStatsModalOpen(false);
-                setToastMessage(null);
-                return true;
-            }
-            return false;
-        };
-
-        // Check every minute
-        const interval = setInterval(() => {
-            if (checkDayChange()) {
-                clearInterval(interval);
-            }
-        }, 60000);
-
-        return () => clearInterval(interval);
-    }, [todayKey]);
+    // --- Day Change Detection --- (Removed continuous checking - now only on page load)
+    // Day change is now only handled in loadGameState() when the page loads
 
     // Allow closing the lock modal with Escape
     useEffect(() => {
@@ -478,7 +445,7 @@ function App() {
                 setToastMessage("An unexpected error occurred.");
             }
         }
-    }, [currentGuess, guesses, solvedStatuses, guesses.length, MAX_GUESSES, timerSeconds, score, calculateScore, showStatistics, isLocked, todayKey, user, systemWord, saveGameState]);
+    }, [currentGuess, guesses, solvedStatuses, MAX_GUESSES, timerSeconds, score, calculateScore, showStatistics, isLocked, todayKey, user, systemWord, saveGameState]);
 
 
     // --- Keyboard Input Handler ---
