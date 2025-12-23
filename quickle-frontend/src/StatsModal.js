@@ -72,10 +72,6 @@ const StatsModal = ({ stats, onClose, resetTime, formatTime, answerWord, isWin }
                     </p>
                 )}
                 
-                <div className="countdown-section">
-                    <p>Next Quickle game will be available in</p>
-                    <div className="countdown-timer">{formatTime(resetTime)}</div>
-                </div>
 
                 <div className="footer-credit">
                     Quickle-Word Game | Built with ❤️ by Atharva Ghayal

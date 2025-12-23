@@ -1,7 +1,5 @@
 'REACT' word coming same as it is as answer to guess daily word!!
 1st guess getting automatically guessed while logging in!!
 showing gameover without playing too
-keyboard missing
-leaderboard missing
-remove only 1 time play.make unlimited times play where user will guess new word everytime which is never been in past!!
-remove timer!!
+keyboard missing.
+leaderboard missing.
