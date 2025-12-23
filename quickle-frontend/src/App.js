@@ -114,7 +114,7 @@ const Toast = ({ message, type, onClose }) => {
 // Main App component
 function App() {
     // USE AUTH CONTEXT
-    const { user, loading, openAuthModal } = useAuth(); 
+    const { user, loading, openAuthModal, isAuthModalOpen } = useAuth(); 
     
     const MAX_GUESSES = 6;
     const WORD_LENGTH = 5;
@@ -450,7 +450,7 @@ function App() {
 
     // --- Keyboard Input Handler ---
     const handleKeyPress = useCallback((key) => {
-        if (gameState !== 'playing' || isStatsModalOpen || isLocked || showGameOverModal) return;
+        if (gameState !== 'playing' || isStatsModalOpen || isLocked || showGameOverModal || isAuthModalOpen) return;
         
         // 1. Handle Letter Input
         if (/^[a-zA-Z]$/.test(key) && currentGuess.length < WORD_LENGTH) {
@@ -468,7 +468,7 @@ function App() {
         if (key === 'Enter' && currentGuess.length === WORD_LENGTH) {
             submitGuess();
         }
-    }, [currentGuess, WORD_LENGTH, submitGuess, gameState, isStatsModalOpen, isLocked, showGameOverModal]);
+    }, [currentGuess, WORD_LENGTH, submitGuess, gameState, isStatsModalOpen, isLocked, showGameOverModal, isAuthModalOpen]);
 
     const handleKeyDown = useCallback((event) => {
         handleKeyPress(event.key);
