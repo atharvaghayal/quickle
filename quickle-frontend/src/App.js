@@ -22,7 +22,7 @@ const VirtualKeyboard = ({ onKeyPress }) => {
     const rows = [
         ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
         ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-        ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACKSPACE']
+        ['Enter', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'Backspace']
     ];
 
     return (
@@ -32,10 +32,10 @@ const VirtualKeyboard = ({ onKeyPress }) => {
                     {row.map((key) => (
                         <button
                             key={key}
-                            className={`key-btn ${key === 'ENTER' || key === 'BACKSPACE' ? 'key-wide' : ''}`}
+                            className={`key-btn ${key === 'Enter' || key === 'Backspace' ? 'key-wide' : ''}`}
                             onClick={() => onKeyPress(key)}
                         >
-                            {key === 'BACKSPACE' ? '⌫' : key}
+                            {key === 'Backspace' ? '⌫' : key === 'Enter' ? 'ENTER' : key}
                         </button>
                     ))}
                 </div>
@@ -129,10 +129,12 @@ function App() {
     const [gameState, setGameState] = useState('playing'); 
     const [score, setScore] = useState(0); 
     const [systemWord, setSystemWord] = useState(''); 
+    const [gameId, setGameId] = useState(null); 
     const [toastMessage, setToastMessage] = useState(null); 
     const [isLocked, setIsLocked] = useState(false); // Device-level one-play lock
     const [showLockModal, setShowLockModal] = useState(false);
     const [showGameOverModal, setShowGameOverModal] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false); // Prevent input during guess submission
     
     // 6th Guess Timer State
     const [timerSeconds, setTimerSeconds] = useState(0);
@@ -161,6 +163,26 @@ function App() {
         localStorage.setItem('quickle_game_state', JSON.stringify(gameStateData));
     }, [guesses, solvedStatuses, gameState, score, systemWord]);
 
+    // --- Statistics Modal Display ---
+    const showStatistics = useCallback(async (finalScore, isWin) => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/user/stats`);
+            setStatsData(response.data);
+            setIsStatsModalOpen(true);
+        } catch (error) {
+            console.error("Error fetching user stats:", error);
+            setStatsData({
+                times_played: 1, 
+                streak: isWin ? 1 : 0, 
+                max_streak: isWin ? 1 : 0, 
+                win_percentage: isWin ? 100.00 : 0.00, 
+                total_points: isWin ? finalScore : 0,
+                is_logged_in: false
+            });
+            setIsStatsModalOpen(true);
+        }
+    }, []);
+
     const loadGameState = useCallback(() => {
         const todayKey = new Date().toISOString().slice(0, 10);
         const savedState = localStorage.getItem('quickle_game_state');
@@ -175,10 +197,10 @@ function App() {
                 setSystemWord(gameStateData.systemWord || '');
                 setIsLocked(gameStateData.gameState !== 'playing');
                 
-                // Show game over modal for completed games on page load
+                // Show stats modal for completed games on page load (unlimited plays)
                 if (gameStateData.gameState === 'won' || gameStateData.gameState === 'lost') {
                     setTimeout(() => {
-                        setShowGameOverModal(true);
+                        showStatistics(gameStateData.score || 0, gameStateData.gameState === 'won');
                     }, 1000); // 1 second delay
                 }
                 
@@ -189,7 +211,7 @@ function App() {
             }
         }
         return false; // No valid saved state
-    }, []);
+    }, [showStatistics]);
     
     useEffect(() => {
         const checkMobile = () => {
@@ -200,6 +222,20 @@ function App() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
     
+    // --- Initial Word Fetch (USING API_BASE_URL) ---
+    const fetchSystemWord = useCallback(async (gameId = null) => {
+        try {
+            const currentGameId = gameId || Date.now().toString();
+            setGameId(currentGameId);
+            const url = `${API_BASE_URL}/wordle/daily-word?gameId=${currentGameId}`;
+            const wordResponse = await axios.get(url);
+            setSystemWord(wordResponse.data.word || "QUICK"); 
+        } catch (error) {
+            console.error("Error fetching daily word:", error);
+            setSystemWord("QUICK"); 
+        }
+    }, []);
+
     // --- One-play-per-day lock and Game State Loading ---
     const todayKey = new Date().toISOString().slice(0, 10);
     useEffect(() => {
@@ -216,36 +252,13 @@ function App() {
                 setToastMessage("Game over. Come back tomorrow for a new word.");
                 setShowLockModal(true);
             } else if (lastPlayed && lastPlayed !== todayKey) {
-                // New day has started, clear old game state
+                // New day has started, clear old game state and fetch new word
                 localStorage.removeItem('quickle_game_state');
                 localStorage.removeItem('quickle_play_date');
+                fetchSystemWord(); // Fetch the new daily word
             }
         }
-    }, [todayKey, loadGameState]);
-
-    // --- Day Change Detection --- (Removed continuous checking - now only on page load)
-    // Day change is now only handled in loadGameState() when the page loads
-
-    // Allow closing the lock modal with Escape
-    useEffect(() => {
-        if (!showLockModal) return;
-        const handleEsc = (e) => {
-            if (e.key === 'Escape') setShowLockModal(false);
-        };
-        window.addEventListener('keydown', handleEsc);
-        return () => window.removeEventListener('keydown', handleEsc);
-    }, [showLockModal]);
-    
-    // --- Initial Word Fetch (USING API_BASE_URL) ---
-    const fetchSystemWord = useCallback(async () => {
-        try {
-            const wordResponse = await axios.get(`${API_BASE_URL}/wordle/daily-word`);
-            setSystemWord(wordResponse.data.word || "QUICK"); 
-        } catch (error) {
-            console.error("Error fetching daily word:", error);
-            setSystemWord("QUICK"); 
-        }
-    }, []);
+    }, [todayKey, loadGameState, fetchSystemWord, showStatistics]);
 
     useEffect(() => {
         fetchSystemWord();
@@ -304,25 +317,24 @@ function App() {
         return 0;
     }, []);
 
-    // --- Statistics Modal Display ---
-    const showStatistics = useCallback(async (finalScore, isWin) => {
-        try {
-            const response = await axios.get(`${API_BASE_URL}/user/stats`);
-            setStatsData(response.data);
-            setIsStatsModalOpen(true);
-        } catch (error) {
-            console.error("Error fetching user stats:", error);
-            setStatsData({
-                times_played: 1, 
-                streak: isWin ? 1 : 0, 
-                max_streak: isWin ? 1 : 0, 
-                win_percentage: isWin ? 100.00 : 0.00, 
-                total_points: isWin ? finalScore : 0,
-                is_logged_in: false
-            });
-            setIsStatsModalOpen(true);
-        }
-    }, []);
+    // --- Game Reset Function ---
+    const resetGame = useCallback(() => {
+        setGuesses([]);
+        setCurrentGuess('');
+        setSolvedStatuses([]);
+        setGameState('playing');
+        setScore(0);
+        setIsTimerActive(false);
+        setTimerSeconds(0);
+        setShowGameOverModal(false);
+        setIsStatsModalOpen(false);
+        setToastMessage(null);
+        setIsSubmitting(false); // Reset submission flag
+        // Generate a new word for this game session
+        fetchSystemWord();
+        // Clear saved game state
+        localStorage.removeItem('quickle_game_state');
+    }, [fetchSystemWord]);
 
 
     // --- 6th Guess Timer Logic ---
@@ -345,11 +357,12 @@ function App() {
 
     // --- Game Submission Logic (USING API_BASE_URL) ---
     const submitGuess = useCallback(async () => {
-        if (isLocked) {
+        if (isLocked || isSubmitting) {
             setToastMessage("Game over. Come back tomorrow for a new word.");
             setShowLockModal(true);
             return;
         }
+        setIsSubmitting(true); // Prevent input during submission
         const guessNumber = guesses.length + 1;
         const guessWord = currentGuess;
         if (!localStorage.getItem('quickle_play_date')) {
@@ -357,7 +370,10 @@ function App() {
         }
         
         try {
-            const response = await axios.post(`${API_BASE_URL}/wordle/guess`, { guess: guessWord });
+            const response = await axios.post(`${API_BASE_URL}/wordle/guess`, { 
+                guess: guessWord,
+                gameId: gameId 
+            });
             const { status_array, is_correct } = response.data;
             
             // 1. Update Game State
@@ -370,8 +386,9 @@ function App() {
                 setScore(finalScore);
                 setGameState('won');
                 setIsTimerActive(false);
-                setIsLocked(true);
-                localStorage.setItem('quickle_play_date', todayKey);
+                // Remove the lock - allow unlimited plays
+                // setIsLocked(true);
+                // localStorage.setItem('quickle_play_date', todayKey);
                 
                 // Save game state
                 saveGameState({
@@ -382,15 +399,16 @@ function App() {
                     systemWord
                 });
                 
-                // Show game over modal first
-                setShowGameOverModal(true);
+                // For unlimited plays, show stats directly instead of game over modal
+                // setShowGameOverModal(true);
+                showStatistics(finalScore, true);
                 
                 // Update stats if user is logged in BEFORE showing stats
                 if (user) {
                     const won = true;
                     const points = calculateScore(guessNumber, timerSeconds);
                     try {
-                        await axios.post(`${API_BASE_URL}/user/update-stats`, { won, points });
+                        await axios.post(`${API_BASE_URL}/user/update-stats`, { won, points, word: systemWord });
                     } catch (error) {
                         console.error("Error updating stats:", error);
                     }
@@ -402,8 +420,9 @@ function App() {
                 setScore(finalScore);
                 setGameState('lost');
                 setIsTimerActive(false);
-                setIsLocked(true);
-                localStorage.setItem('quickle_play_date', todayKey);
+                // Remove the lock - allow unlimited plays
+                // setIsLocked(true);
+                // localStorage.setItem('quickle_play_date', todayKey);
                 
                 // Save game state
                 saveGameState({
@@ -414,21 +433,22 @@ function App() {
                     systemWord
                 });
                 
-                // Show game over modal first
-                setShowGameOverModal(true);
+                // For unlimited plays, show stats directly instead of game over modal
+                // setShowGameOverModal(true);
+                showStatistics(finalScore, false);
                 
                 // Update stats if user is logged in BEFORE showing stats
                 if (user) {
                     const won = false;
                     const points = -5;
                     try {
-                        await axios.post(`${API_BASE_URL}/user/update-stats`, { won, points });
+                        await axios.post(`${API_BASE_URL}/user/update-stats`, { won, points, word: systemWord });
                     } catch (error) {
                         console.error("Error updating stats:", error);
                     }
                 }
                 
-                showStatistics(finalScore, false);
+                // showStatistics(finalScore, false); // Already called above
             
             } else if (guessNumber === MAX_GUESSES - 1) {
                 setIsTimerActive(true);
@@ -438,19 +458,26 @@ function App() {
             // Remove the duplicate update stats call here
             
         } catch (error) {
-            if (error.response && error.response.status === 422) {
+            if (error.response && error.response.data && error.response.data.error) {
+                setToastMessage(error.response.data.error);
+                setCurrentGuess(''); // Clear the invalid guess so user can try again
+            } else if (error.response && error.response.status === 422) {
                 setToastMessage("Enter only meaningful 5-letter words.");
+                setCurrentGuess(''); // Clear the invalid guess so user can try again
             } else {
                 console.error("Error verifying guess:", error);
                 setToastMessage("An unexpected error occurred.");
+                setCurrentGuess(''); // Clear the guess on unexpected error
             }
+        } finally {
+            setIsSubmitting(false); // Re-enable input
         }
-    }, [currentGuess, guesses, solvedStatuses, MAX_GUESSES, timerSeconds, score, calculateScore, showStatistics, isLocked, todayKey, user, systemWord, saveGameState]);
+    }, [currentGuess, guesses, solvedStatuses, MAX_GUESSES, timerSeconds, score, calculateScore, showStatistics, isLocked, isSubmitting, todayKey, user, systemWord, saveGameState, gameId]);
 
 
     // --- Keyboard Input Handler ---
     const handleKeyPress = useCallback((key) => {
-        if (gameState !== 'playing' || isStatsModalOpen || isLocked || showGameOverModal || isAuthModalOpen) return;
+        if (gameState !== 'playing' || isStatsModalOpen || isLocked || showGameOverModal || isAuthModalOpen || isSubmitting) return;
         
         // 1. Handle Letter Input
         if (/^[a-zA-Z]$/.test(key) && currentGuess.length < WORD_LENGTH) {
@@ -468,7 +495,7 @@ function App() {
         if (key === 'Enter' && currentGuess.length === WORD_LENGTH) {
             submitGuess();
         }
-    }, [currentGuess, WORD_LENGTH, submitGuess, gameState, isStatsModalOpen, isLocked, showGameOverModal, isAuthModalOpen]);
+    }, [currentGuess, WORD_LENGTH, submitGuess, gameState, isStatsModalOpen, isLocked, showGameOverModal, isAuthModalOpen, isSubmitting]);
 
     const handleKeyDown = useCallback((event) => {
         handleKeyPress(event.key);
@@ -592,6 +619,7 @@ function App() {
                     formatTime={formatTime}
                     answerWord={systemWord}
                     isWin={gameState === 'won'}
+                    onPlayAgain={resetGame}
                 />
             )}
             

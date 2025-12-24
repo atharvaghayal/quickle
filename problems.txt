@@ -1,5 +1,6 @@
-'REACT' word coming same as it is as answer to guess daily word!!
-1st guess getting automatically guessed while logging in!!
-showing gameover without playing too
-keyboard missing.
-leaderboard missing.
+add scrollbar color > linear gradient mix color of green,dark green,yellow, dark yellow, grey.
+keyboard missing
+leaderboard missing
+fix rules card and profile card tab logo (showing AG portfolio logo)
+single time play per day feature!!
+remove play again from stats card!!

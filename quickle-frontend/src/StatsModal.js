@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 
-const StatsModal = ({ stats, onClose, resetTime, formatTime, answerWord, isWin }) => {
+const StatsModal = ({ stats, onClose, resetTime, formatTime, answerWord, isWin, onPlayAgain }) => {
     
     // This Hook is now structurally guaranteed to be the first hook call, 
     // eliminating the conditional error when imported into App.js.
@@ -71,8 +71,9 @@ const StatsModal = ({ stats, onClose, resetTime, formatTime, answerWord, isWin }
                         “Sign-up OR Login if you want to save your scores and appear at the top of the leaderboard.”
                     </p>
                 )}
-                
-
+                                <button className="primary-btn play-again-btn" onClick={() => { onPlayAgain(); onClose(); }}>
+                    Play Again
+                </button>
                 <div className="footer-credit">
                     Quickle-Word Game | Built with ❤️ by Atharva Ghayal
                 </div>
