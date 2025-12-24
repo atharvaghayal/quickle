@@ -4,3 +4,4 @@ leaderboard missing
 fix rules card and profile card tab logo (showing AG portfolio logo)
 single time play per day feature!!
 remove play again from stats card!!
+if user types a word which is not meaningful and presses enter, that word should not be considered as a guess, and a message should pop on user's screen as "enter only meaningful word!!"
