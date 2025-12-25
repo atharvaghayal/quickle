@@ -704,3 +704,38 @@ body.light-theme .virtual-keyboard {
 .row-shake {
   animation: shake 0.2s ease-in-out;
 }
+
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-dark-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  /* Equal mix of all requested colors using a linear gradient */
+  background: linear-gradient(
+    to bottom,
+    #00ff00 0% 14%,       /* Green */
+    #006400 14% 28%,     /* Dark Green */
+    #ffff00 28% 42%,     /* Yellow */
+    #8b8000 42% 56%,     /* Dark Yellow */
+    #808080 56% 70%,     /* Grey */
+    #1a1a1a 70% 84%,     /* Near Black */
+    #ffffff 84% 100%     /* White */
+  );
+  border: 1px solid #333;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+  filter: brightness(1.1);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #808a43 var(--color-dark-bg);
+}
