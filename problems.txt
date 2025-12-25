@@ -1,2 +1,1 @@
-leaderboard missing
-if user types a word which is not meaningful and presses enter, that word should not be considered as a guess, and a message should pop on user's screen as "enter only meaningful word!!"
+leaderboard missing!!

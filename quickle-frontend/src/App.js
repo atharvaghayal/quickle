@@ -75,14 +75,15 @@ const Tile = ({ letter, status }) => {
 };
 
 // --- Row Component ---
-const Row = ({ guess, solutionStatus }) => {
+// UPDATED: Added isShaking prop to trigger CSS animation
+const Row = ({ guess, solutionStatus, isShaking }) => {
     const tiles = Array.from({ length: 5 }, (_, i) => ({
         letter: guess[i] || '',
         status: solutionStatus ? solutionStatus[i] : (guess[i] ? 'typing' : 'empty')
     }));
 
     return (
-        <div className="row">
+        <div className={`row ${isShaking ? 'row-shake' : ''}`}>
             {tiles.map((tile, index) => (
                 <Tile key={index} letter={tile.letter} status={tile.status} />
             ))}
@@ -136,6 +137,9 @@ function App() {
     const [showGameOverModal, setShowGameOverModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false); // Prevent input during guess submission
     
+    // NEW: State to track which row should perform the shake animation
+    const [shakeRow, setShakeRow] = useState(null);
+
     // 6th Guess Timer State
     const [timerSeconds, setTimerSeconds] = useState(0);
     const [isTimerActive, setIsTimerActive] = useState(false);
@@ -330,6 +334,7 @@ function App() {
         setIsStatsModalOpen(false);
         setToastMessage(null);
         setIsSubmitting(false); // Reset submission flag
+        setShakeRow(null); // Reset shake state
         // Generate a new word for this game session
         fetchSystemWord();
         // Clear saved game state
@@ -355,16 +360,18 @@ function App() {
     }, [isTimerActive]);
 
 
-    // --- Game Submission Logic (USING API_BASE_URL) ---
+    // --- Game Submission Logic (UPDATED) ---
     const submitGuess = useCallback(async () => {
         if (isLocked || isSubmitting) {
             setToastMessage("Game over. Come back tomorrow for a new word.");
             setShowLockModal(true);
             return;
         }
+
         setIsSubmitting(true); // Prevent input during submission
         const guessNumber = guesses.length + 1;
         const guessWord = currentGuess;
+
         if (!localStorage.getItem('quickle_play_date')) {
             localStorage.setItem('quickle_play_date', todayKey);
         }
@@ -374,9 +381,24 @@ function App() {
                 guess: guessWord,
                 gameId: gameId 
             });
+
+            // --- IMPROVED VALIDATION LOGIC WITH SHAKE ---
+            if (response.data.error) {
+                setToastMessage("Enter only meaningful words!");
+                
+                // Trigger shake animation on the current typing row
+                setShakeRow(guesses.length);
+                
+                // Reset shakeRow after animation duration (match CSS)
+                setTimeout(() => setShakeRow(null), 500);
+                
+                setIsSubmitting(false);
+                return; // Exit without advancing game state
+            }
+
             const { status_array, is_correct } = response.data;
             
-            // 1. Update Game State
+            // 1. Update Game State (Only happens if word is valid)
             setGuesses((prev) => [...prev, guessWord]);
             setSolvedStatuses((prev) => [...prev, status_array]);
             setCurrentGuess('');
@@ -386,11 +408,7 @@ function App() {
                 setScore(finalScore);
                 setGameState('won');
                 setIsTimerActive(false);
-                // Remove the lock - allow unlimited plays
-                // setIsLocked(true);
-                // localStorage.setItem('quickle_play_date', todayKey);
                 
-                // Save game state
                 saveGameState({
                     guesses: [...guesses, guessWord],
                     solvedStatuses: [...solvedStatuses, status_array],
@@ -399,11 +417,8 @@ function App() {
                     systemWord
                 });
                 
-                // For unlimited plays, show stats directly instead of game over modal
-                // setShowGameOverModal(true);
                 showStatistics(finalScore, true);
                 
-                // Update stats if user is logged in BEFORE showing stats
                 if (user) {
                     const won = true;
                     const points = calculateScore(guessNumber, timerSeconds);
@@ -420,11 +435,7 @@ function App() {
                 setScore(finalScore);
                 setGameState('lost');
                 setIsTimerActive(false);
-                // Remove the lock - allow unlimited plays
-                // setIsLocked(true);
-                // localStorage.setItem('quickle_play_date', todayKey);
                 
-                // Save game state
                 saveGameState({
                     guesses: [...guesses, guessWord],
                     solvedStatuses: [...solvedStatuses, status_array],
@@ -433,11 +444,8 @@ function App() {
                     systemWord
                 });
                 
-                // For unlimited plays, show stats directly instead of game over modal
-                // setShowGameOverModal(true);
                 showStatistics(finalScore, false);
                 
-                // Update stats if user is logged in BEFORE showing stats
                 if (user) {
                     const won = false;
                     const points = -5;
@@ -447,33 +455,28 @@ function App() {
                         console.error("Error updating stats:", error);
                     }
                 }
-                
-                // showStatistics(finalScore, false); // Already called above
             
             } else if (guessNumber === MAX_GUESSES - 1) {
                 setIsTimerActive(true);
                 setTimerSeconds(0);
             }
             
-            // Remove the duplicate update stats call here
-            
         } catch (error) {
             if (error.response && error.response.data && error.response.data.error) {
                 setToastMessage(error.response.data.error);
-                setCurrentGuess(''); // Clear the invalid guess so user can try again
             } else if (error.response && error.response.status === 422) {
                 setToastMessage("Enter only meaningful 5-letter words.");
-                setCurrentGuess(''); // Clear the invalid guess so user can try again
             } else {
                 console.error("Error verifying guess:", error);
                 setToastMessage("An unexpected error occurred.");
-                setCurrentGuess(''); // Clear the guess on unexpected error
             }
+            // Trigger shake on catch as well for visual feedback
+            setShakeRow(guesses.length);
+            setTimeout(() => setShakeRow(null), 500);
         } finally {
             setIsSubmitting(false); // Re-enable input
         }
     }, [currentGuess, guesses, solvedStatuses, MAX_GUESSES, timerSeconds, score, calculateScore, showStatistics, isLocked, isSubmitting, todayKey, user, systemWord, saveGameState, gameId]);
-
 
     // --- Keyboard Input Handler ---
     const handleKeyPress = useCallback((key) => {
@@ -510,14 +513,17 @@ function App() {
     }, [handleKeyDown]);
 
     // Create 6 rows for the board
+    // UPDATED: Now passing isShaking prop to each row
     const boardRows = Array.from({ length: MAX_GUESSES }, (_, index) => {
         const status = solvedStatuses[index];
+        const isShaking = shakeRow === index;
+        
         if (index < guesses.length) {
-            return ( <Row key={index} guess={guesses[index]} solutionStatus={status}/> );
+            return ( <Row key={index} guess={guesses[index]} solutionStatus={status} isShaking={isShaking}/> );
         } else if (index === guesses.length) {
-            return ( <Row key={index} guess={currentGuess} isCurrentGuess={true}/> );
+            return ( <Row key={index} guess={currentGuess} isCurrentGuess={true} isShaking={isShaking}/> );
         } else {
-            return <Row key={index} guess="" />;
+            return <Row key={index} guess="" isShaking={isShaking}/>;
         }
     });
 

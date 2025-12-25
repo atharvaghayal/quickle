@@ -692,3 +692,15 @@ body.light-theme .virtual-keyboard {
 .App.mobile {
     padding-bottom: 200px; /* Space for virtual keyboard */
 }
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+
+.row-shake {
+  animation: shake 0.2s ease-in-out;
+}

@@ -790,13 +790,13 @@ async def verify_guess(payload: dict, request: Request, db: Session = Depends(ge
     guess = payload.get("guess", "").upper()
     game_id = payload.get("gameId")
     
-    # Validate that the guess is exactly 5 letters
     if len(guess) != 5:
         return {"error": "Guess must be exactly 5 letters"}
     
-    # Validate that the guess is a valid word
+    # Check if the word exists in our comprehensive list
     if guess not in VALID_GUESSES:
-        return {"error": "Not a valid word. Please enter a meaningful 5-letter word."}
+        # We return a specific error message that the frontend will catch
+        return {"error": "NOT_A_VALID_WORD"}
     
     # Get user_id if logged in
     user_id = None
