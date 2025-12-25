@@ -1,6 +1,6 @@
-add scrollbar color > linear gradient mix color of green,dark green,yellow, dark yellow, grey.
+fix rules card and profile card tab logo (showing AG portfolio logo)
 keyboard missing
 leaderboard missing
-fix rules card and profile card tab logo (showing AG portfolio logo)
+add scrollbar color > linear gradient mix color of green,dark green,yellow, dark yellow, grey.
 single time play per day feature!!
 remove play again from stats card!!
