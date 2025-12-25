@@ -1,1 +1,6 @@
 leaderboard missing!!
+
+scrollbar to equally mixed color of green, dark green, yellow, dark yellow, grey, dark grey(near to black shade) and white.
+
+responsive to all screen size devices in such a way that title, to all guess boxes are perfectly fit to screen completely from top to bottom!!
+EXCEPT small screen devices who have keyboards!!
