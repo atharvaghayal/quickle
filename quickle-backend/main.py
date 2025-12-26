@@ -930,6 +930,23 @@ async def get_stats(request: Request, db: Session = Depends(get_db)):
         "is_logged_in": True
     }
 
+
+@app.get("/api/user/leaderboard")
+async def get_leaderboard(db: Session = Depends(get_db)):
+    # Fetch top 10 players sorted by total points
+    # You can change the limit to show more users
+    top_users = db.query(User).join(UserStats).order_by(UserStats.total_points.desc()).limit(10).all()
+    
+    leaderboard = []
+    for index, user in enumerate(top_users):
+        leaderboard.append({
+            "rank": index + 1,
+            "username": user.username,
+            "points": user.stats.total_points if user.stats else 0
+        })
+    return leaderboard
+
+
 @app.get("/")
 async def root():
     return {"message": "Quickle API is running"}
