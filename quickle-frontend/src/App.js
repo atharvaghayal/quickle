@@ -22,7 +22,6 @@ const Leaderboard = ({ data }) => {
     return (
         <div className="leaderboard-container">
             <div className="leaderboard-title">LEADERBOARD</div>
-            {/* NEW: Scrollable area for rankings */}
             <div className="leaderboard-scroll-area">
                 {data.map((player) => {
                     let rankClass = "rank-normal";

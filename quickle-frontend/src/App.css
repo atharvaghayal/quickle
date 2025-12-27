@@ -743,76 +743,80 @@ body.light-theme .virtual-keyboard {
 /* --- Leaderboard Positioning & Design --- */
 .leaderboard-container {
     position: fixed;
-    max-height: 300px;
-    display: flex;
-    flex-direction: column;
     right: 20px;
-    top: 55%; /* Centered vertically below profile icon */
+    top: 55%; 
     transform: translateY(-50%);
-    width: 220px;
-    background: rgba(0, 0, 0, 0.8);
-    border: 2px solid var(--color-icon-border);
-    border-radius: 8px;
+    /* Increased width */
+    width: 280px; 
+    background: rgba(0, 0, 0, 0.85);
+    border: 3px solid var(--color-icon-border); /* Increased outline thickness */
+    border-radius: 10px;
     padding: 15px;
     font-family: 'Courier New', monospace;
     z-index: 900;
+    display: flex;
+    flex-direction: column;
 }
 
 .leaderboard-scroll-area {
     overflow-y: auto;
     flex-grow: 1;
-    padding-right: 5px; /* Space for the scrollbar */
+    max-height: 350px;
+    padding-right: 8px; /* Space for the scrollbar */
 }
 
 .leaderboard-scroll-area::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
 }
 
 .leaderboard-scroll-area::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
 }
 
 .leaderboard-scroll-area::-webkit-scrollbar-thumb {
-    border-radius: 4px;
+    border-radius: 5px;
     background: linear-gradient(
         to bottom,
-        #00ff00 0% 14%,       /* Green */
-        #006400 14% 28%,      /* Dark Green */
-        #ffff00 28% 42%,      /* Yellow */
-        #8b8000 42% 56%,      /* Dark Yellow */
-        #808080 56% 70%,      /* Grey */
-        #1a1a1a 70% 84%,      /* Near Black */
-        #ffffff 84% 100%      /* White */
+        #00ff00 0% 14%,       
+        #006400 14% 28%,     
+        #ffff00 28% 42%,     
+        #8b8000 42% 56%,     
+        #808080 56% 70%,     
+        #1a1a1a 70% 84%,     
+        #ffffff 84% 100%     
     );
+    border: 1px solid #000;
 }
 
-body.light-theme .leaderboard-container {
-    background: rgba(255, 255, 255, 0.9);
-}
+body.light-theme .leaderboard-container { background: rgba(255, 255, 255, 0.95); }
 
 .leaderboard-title {
     text-align: center;
-    font-size: 1.1em;
+    font-size: 1.3em; /* Slightly larger title */
     color: var(--color-text-primary);
-    margin-bottom: 10px;
-    border-bottom: 1px solid var(--color-gray);
-    padding-bottom: 5px;
+    margin-bottom: 12px;
+    border-bottom: 2px solid var(--color-gray);
+    padding-bottom: 8px;
+    font-weight: bold;
 }
 
 .leaderboard-row {
     display: flex;
     justify-content: space-between;
-    padding: 6px 10px;
-    margin-bottom: 4px;
-    border-radius: 4px;
-    font-size: 0.9em;
-    color: #fff; /* Default text for dark bars */
+    padding: 8px 12px; /* Increased padding for better readability */
+    margin-bottom: 5px;
+    border-radius: 5px;
+    font-size: 1em;
+    color: #fff;
+    min-height: 20px; /* Ensures consistent row height */
 }
 
 /* Specific Rank Colors */
-.rank-1 { background-color: #00ff00 !important; color: #000 !important; font-weight: bold; } /* Green */
-.rank-2 { background-color: #ffff00 !important; color: #000 !important; font-weight: bold; } /* Yellow */
-.rank-3 { background-color: #808080 !important; color: #fff !important; } /* Grey */
+.rank-1 { background-color: #00ff00 !important; color: #000 !important; font-weight: bold; box-shadow: 0 0 10px rgba(0, 255, 0, 0.3); }
+.rank-2 { background-color: #ffff00 !important; color: #000 !important; font-weight: bold; }
+.rank-3 { background-color: #808080 !important; color: #fff !important; }
+.rank-normal { background: #222; border: 1px solid #333; }
 
 /* Normal Row Color */
 .rank-normal {
@@ -820,8 +824,4 @@ body.light-theme .leaderboard-container {
     border: 1px solid #444;
 }
 
-body.light-theme .rank-normal {
-    background: #eee;
-    color: #000;
-    border-color: #ccc;
-}
+body.light-theme .rank-normal { background: #eee; color: #000; border-color: #ccc; }

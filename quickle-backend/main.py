@@ -935,7 +935,7 @@ async def get_stats(request: Request, db: Session = Depends(get_db)):
 async def get_leaderboard(db: Session = Depends(get_db)):
     # Fetch top 10 players sorted by total points
     # You can change the limit to show more users
-    top_users = db.query(User).join(UserStats).order_by(UserStats.total_points.desc()).limit(10).all()
+    top_users = db.query(User).join(UserStats).order_by(UserStats.total_points.desc()).limit(50).all()
     
     leaderboard = []
     for index, user in enumerate(top_users):
