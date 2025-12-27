@@ -1,7 +1,13 @@
-streak issue
+streak issue(users guesses)
 
 responsive to all screen size devices in such a way that title, to all guess boxes are perfectly fit to screen completely from top to bottom!!
 EXCEPT small screen devices who have keyboards!!
 
 leaderboard monthly reset and the winner(1ST RANK) of the month(with month name like Jan,Feb,Mar,etc..) 
 should be shown outside above the leaderboard and below the profile icon!!
+
+increase outline size of leaderboard(height and width)
+
+top 10 rows(bars) then scroll within leaderboard!!
+
+add no of days user played along with points!!
