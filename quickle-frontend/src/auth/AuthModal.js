@@ -2,18 +2,24 @@ import React, { useState } from 'react';
 import { useAuth } from './AuthContext'; 
 
 const AuthModal = () => {
-    const { isAuthModalOpen, closeAuthModal, login, signup } = useAuth();
+    const { isAuthModalOpen, closeAuthModal, login, signup, forgotPassword } = useAuth();
     const [mode, setMode] = useState('login'); // 'login' | 'signup'
-    const [email, setEmail] = useState(''); // This state holds the string the user types
+    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [forgotMode, setForgotMode] = useState(false);
 
     if (!isAuthModalOpen) return null;
 
     const toggleMode = () => {
         setMode(prev => prev === 'login' ? 'signup' : 'login');
         setError('');
+        setForgotMode(false);
+        setEmail('');
+        setUsername('');
+        setPassword('');
     };
 
     const submit = async (e) => {
@@ -21,30 +27,30 @@ const AuthModal = () => {
         setError('');
         setIsSubmitting(true);
 
-        // FIX: Create a payload with 'username' to match your FastAPI UserAuth schema
-        // We use the value from the 'email' state variable as the username
-        const payload = { username: email, password: password };
-
         try {
-            if (mode === 'login') {
-                await login(payload);
+            if (forgotMode) {
+                await forgotPassword({ email });
+                setError('If the email is registered, a reset link has been sent.');
+            } else if (mode === 'login') {
+                await login({ username, password });
+                setUsername('');
+                setPassword('');
             } else {
-                await signup(payload);
+                await signup({ email, username, password });
+                setEmail('');
+                setUsername('');
+                setPassword('');
+                setMode('login'); // Switch to login mode after successful signup
             }
-            // Clear fields on success
-            setEmail('');
-            setPassword('');
         } catch (err) {
             let message = 'Unable to authenticate. Please try again.';
 
             if (err.response) {
                 const data = err.response.data;
                 
-                // 1. Handle string-based detail errors (e.g., "Username already registered")
                 if (data.detail && typeof data.detail === 'string') {
                     message = data.detail;
                 } 
-                // 2. Handle FastAPI Pydantic validation errors (array of objects)
                 else if (data.detail && Array.isArray(data.detail)) {
                     message = data.detail[0].msg || message;
                 }
@@ -63,43 +69,74 @@ const AuthModal = () => {
             <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="close-btn" onClick={closeAuthModal}>&times;</button>
                 
-                <h2>{mode === 'login' ? 'Welcome Back' : 'Create Account'}</h2>
+                <h2>{forgotMode ? 'Forgot Password' : mode === 'login' ? 'Welcome Back' : 'Create Account'}</h2>
                 <p className="auth-subtitle">
-                    {mode === 'login' ? 'Enter your details to continue' : 'Join the Quickle community'}
+                    {forgotMode ? 'Enter your email to reset password' : mode === 'login' ? 'Enter your details to continue' : 'Join the Quickle community'}
                 </p>
 
                 <form className="auth-form" onSubmit={submit}>
-                    <label>
-                        <span>Username</span> {/* Wrap in span */}
-                        <input
-                            type="text" 
-                            value={email}
-                            required
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="my_username"
-                        />
-                    </label>
-                    <label>
-                        <span>Password</span> {/* Wrap in span */}
-                        <input
-                            type="password"
-                            value={password}
-                            required
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
-                        />
-                    </label>
+                    {forgotMode ? (
+                        <label>
+                            <span>Email</span>
+                            <input
+                                type="email"
+                                value={email}
+                                required
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="your@email.com"
+                            />
+                        </label>
+                    ) : (
+                        <>
+                            {mode === 'signup' && (
+                                <label>
+                                    <span>Email</span>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        required
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="your@email.com"
+                                    />
+                                </label>
+                            )}
+                            <label>
+                                <span>Username</span>
+                                <input
+                                    type="text"
+                                    value={username}
+                                    required
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="my_username"
+                                />
+                            </label>
+                            <label>
+                                <span>Password</span>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    required
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                />
+                            </label>
+                        </>
+                    )}
     
     {error && <div className="auth-error">{error}</div>} 
     
     <button type="submit" className="primary-btn" disabled={isSubmitting}>
-        {isSubmitting ? 'Please wait...' : mode === 'login' ? 'Login' : 'Sign Up'}
+        {isSubmitting ? 'Please wait...' : forgotMode ? 'Send Reset Email' : mode === 'login' ? 'Login' : 'Sign Up'}
     </button>
 </form>
 
                 <div className="switch-mode">
-                    {mode === 'login' ? (
+                    {forgotMode ? (
+                        <button onClick={() => { setForgotMode(false); setError(''); setEmail(''); }}>Back to Login</button>
+                    ) : mode === 'login' ? (
                         <>
+                            <button onClick={() => setForgotMode(true)}>Forgot Password?</button>
+                            <br />
                             New here? <button onClick={toggleMode}>Create an account</button>
                         </>
                     ) : (

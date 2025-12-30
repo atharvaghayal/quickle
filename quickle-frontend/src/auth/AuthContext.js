@@ -35,24 +35,40 @@ export const AuthProvider = ({ children }) => {
         refreshUser();
     }, [refreshUser]);
 
-    // Sign up a new user (changed 'email' to 'username' to match backend)
+    // Sign up a new user
     const signup = useCallback(
-        async ({ username, password }) => {
-            await api.post('/auth/signup', { username, password });
+        async ({ email, username, password }) => {
+            await api.post('/auth/signup', { email, username, password });
             await refreshUser(); // Fetch the newly created user session
+            // Removed setIsAuthModalOpen(false) to keep modal open for login
+        },
+        [refreshUser]
+    );
+
+    // Log in
+    const login = useCallback(
+        async ({ username, password }) => {
+            await api.post('/auth/login', { username, password });
+            await refreshUser();
             setIsAuthModalOpen(false);
         },
         [refreshUser]
     );
 
-    // Log in (changed 'email' to 'username' to match backend)
-    const login = useCallback(
-        async ({ username, password }) => {
-            await api.post('/auth/login', { username, password });
-            await refreshUser(); // Fetch the logged-in user session
-            setIsAuthModalOpen(false);
+    // Forgot password
+    const forgotPassword = useCallback(
+        async ({ email }) => {
+            await api.post('/auth/forgot-password', { email });
         },
-        [refreshUser]
+        []
+    );
+
+    // Update password
+    const updatePassword = useCallback(
+        async ({ old_password, new_password }) => {
+            await api.post('/auth/update-password', { old_password, new_password });
+        },
+        []
     );
 
     // Log out (clears the session cookie)
@@ -75,8 +91,10 @@ export const AuthProvider = ({ children }) => {
             signup,
             login,
             logout,
+            forgotPassword,
+            updatePassword,
         }),
-        [user, loading, isAuthModalOpen, signup, login, logout]
+        [user, loading, isAuthModalOpen, signup, login, logout, forgotPassword, updatePassword]
     );
 
     return (

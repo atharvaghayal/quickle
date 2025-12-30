@@ -5,6 +5,7 @@ import StatsModal from './StatsModal';
 import { useAuth } from './auth/AuthContext'; 
 import AuthModal from './auth/AuthModal'; 
 import UserMenu from './auth/UserMenu'; 
+import ResetPassword from './ResetPassword'; 
 
 const API_BASE_URL = 'http://localhost:8000/api';
 axios.defaults.withCredentials = true;
@@ -95,7 +96,7 @@ const Toast = ({ message, onClose }) => {
 // --- Main App ---
 function App() {
     // FIXED: Removed unused 'loading' and 'isAuthModalOpen' to resolve ESLint warnings
-    const { user, openAuthModal } = useAuth();
+    const { user, openAuthModal, isAuthModalOpen } = useAuth();
     
     const [theme, setTheme] = useState(() => localStorage.getItem('quickle_theme') || 'dark');
     const [guesses, setGuesses] = useState([]);
@@ -112,6 +113,7 @@ function App() {
     const [statsData, setStatsData] = useState(null);
     // Wordle doesn't use a scoring/timer system; keep state minimal
     const [isMobile, setIsMobile] = useState(false);
+    const [isResetMode, setIsResetMode] = useState(false);
     
     // Logic Ref to prevent flickering re-opens
     const hasAutoShownStats = useRef(false);
@@ -197,6 +199,13 @@ function App() {
         return () => window.removeEventListener('resize', check);
     }, []); // Empty deps to stop loops
 
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('token')) {
+            setIsResetMode(true);
+        }
+    }, []);
+
     const resetGame = useCallback(() => {
         window.location.reload(); 
     }, []);
@@ -241,29 +250,37 @@ function App() {
     }, [currentGuess, gameState, isStatsModalOpen, isLocked, isSubmitting, submitGuess]);
 
     useEffect(() => {
+        if (isAuthModalOpen || isResetMode) return; // Don't listen to keys when auth modal or reset is open
+
         const h = (e) => handleKeyPress(e.key);
         document.addEventListener('keydown', h);
         return () => document.removeEventListener('keydown', h);
-    }, [handleKeyPress]);
+    }, [handleKeyPress, isAuthModalOpen, isResetMode]);
 
     return (
         <div className={`App ${isMobile ? 'mobile' : ''}`}>
-            <div className="help-icon" onClick={redirectToRules}>?</div>
-            <ThemeButton theme={theme} toggleTheme={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} />
-            {user ? <UserMenu /> : <button className="login-btn" onClick={openAuthModal}>Signup/Login</button>}
-            {leaderboardData.length > 0 && <Leaderboard data={leaderboardData} />}
-            <header className="header"><BitTitle text="QUICKLE" /></header>
-            <div className="board">
-                {Array.from({ length: 6 }).map((_, i) => (
-                    <Row key={i} guess={i === guesses.length ? currentGuess : (guesses[i] || "")} solutionStatus={solvedStatuses[i]} isShaking={shakeRow === i} />
-                ))}
-            </div>
-            {isMobile && <VirtualKeyboard onKeyPress={handleKeyPress} />}
-            <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
-            {isStatsModalOpen && statsData && (
-                <StatsModal stats={statsData} onClose={() => setIsStatsModalOpen(false)} answerWord={systemWord} isWin={gameState === 'won'} onPlayAgain={resetGame} />
+            {isResetMode ? (
+                <ResetPassword />
+            ) : (
+                <>
+                    <div className="help-icon" onClick={redirectToRules}>?</div>
+                    <ThemeButton theme={theme} toggleTheme={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} />
+                    {user ? <UserMenu /> : <button className="login-btn" onClick={openAuthModal}>Signup/Login</button>}
+                    {leaderboardData.length > 0 && <Leaderboard data={leaderboardData} />}
+                    <header className="header"><BitTitle text="QUICKLE" /></header>
+                    <div className="board">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                            <Row key={i} guess={i === guesses.length ? currentGuess : (guesses[i] || "")} solutionStatus={solvedStatuses[i]} isShaking={shakeRow === i} />
+                        ))}
+                    </div>
+                    {isMobile && <VirtualKeyboard onKeyPress={handleKeyPress} />}
+                    <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+                    {isStatsModalOpen && statsData && (
+                        <StatsModal stats={statsData} onClose={() => setIsStatsModalOpen(false)} answerWord={systemWord} isWin={gameState === 'won'} onPlayAgain={resetGame} />
+                    )}
+                    <AuthModal />
+                </>
             )}
-            <AuthModal />
         </div>
     );
 }
