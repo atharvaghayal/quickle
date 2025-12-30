@@ -104,7 +104,7 @@ VALID_GUESSES = [
     "WHITE", "WHOLE", "WHOSE", "WOMAN", "WOMEN", "WORLD", "WORRY", "WORSE", "WORST", "WORTH",
     "WOULD", "WRITE", "WRONG", "WROTE", "YOUNG", "YOUTH",
     # Additional comprehensive 5-letter words
-    "ABACK", "ABASE", "ABATE", "ABBEY", "ABBOT", "ABHOR", "ABIDE", "ABODE", "ABORT", "ABOUND",
+    "ABACK", "ABASE", "ABATE", "ABBEY", "ABBOT", "ABHOR", "ABIDE", "ABODE", "ABORT", "ABOUD",
     "ABUSE", "ABYSS", "ACORN", "ACRID", "ACTED", "ACTIN", "ACTOR", "ACUTE", "ADAGE", "ADAPT",
     "ADEPT", "ADMIN", "ADMIT", "ADOBE", "ADOPT", "ADORE", "ADORN", "ADULT", "AFFIX", "AFIRE",
     "AFOOT", "AFORE", "AFRESH", "AGATE", "AGAVE", "AGENT", "AGILE", "AGING", "AGLOW", "AGONY",
@@ -424,7 +424,7 @@ DAILY_ANSWERS = [
     "ABOUT", "ABOVE", "ABUSE", "ACTOR", "ACUTE", "ADMIT", "ADOPT", "ADULT", "AFTER", "AGAIN",
     "AGENT", "AGREE", "AHEAD", "ALARM", "ALBUM", "ALERT", "ALIEN", "ALIGN", "ALIKE", "ALIVE",
     # Additional common words for daily challenges
-    "ABACK", "ABASE", "ABATE", "ABBEY", "ABBOT", "ABHOR", "ABIDE", "ABODE", "ABORT", "ABOUND",
+    "ABACK", "ABASE", "ABATE", "ABBEY", "ABBOT", "ABHOR", "ABIDE", "ABODE", "ABORT", "ABOUD",
     "ABUSE", "ABYSS", "ACORN", "ACRID", "ACTED", "ACTIN", "ACTOR", "ACUTE", "ADAGE", "ADAPT",
     "ADEPT", "ADMIN", "ADMIT", "ADOBE", "ADOPT", "ADORE", "ADORN", "ADULT", "AFFIX", "AFIRE",
     "AFOOT", "AFORE", "AFRESH", "AGATE", "AGAVE", "AGENT", "AGILE", "AGING", "AGLOW", "AGONY",
@@ -785,44 +785,48 @@ async def get_next_reset():
     # Placeholder for the time remaining until the next word (in seconds)
     return {"time_remaining_seconds": 3600}
 
+# --- main.py (Verify Guess Endpoint) ---
 @app.post("/api/wordle/guess")
 async def verify_guess(payload: dict, request: Request, db: Session = Depends(get_db)):
     guess = payload.get("guess", "").upper()
     game_id = payload.get("gameId")
     
-    # Identify user context
+    if len(guess) != 5:
+        return {"error": "Guess must be exactly 5 letters"}
+    
+    if guess not in VALID_GUESSES:
+        return {"error": "Not a valid word."}
+    
     user_id = None
     session_id = request.cookies.get("session_id")
     if session_id:
         user = db.query(User).filter(User.id == int(session_id)).first()
-        if user: user_id = user.id
+        if user:
+            user_id = user.id
     
-    # Retrieve the word using the LOCKED game_id
+    # Strictly fetch the word tied to the game_id session
     target_word = get_daily_word(game_id, user_id, db).upper()
-
-    # Basic Validation
-    if len(guess) != 5:
-        return {"error": "Guess must be exactly 5 letters"}
-    if guess not in VALID_GUESSES:
-        return {"error": "Not a valid word."}
-
-    # Proper Wordle Algorithm (Two-Pass)
+    
+    # COORDINATION LOGIC: Two-Pass Tracing
     status_array = ["absent"] * 5
     target_list = list(target_word)
     guess_list = list(guess)
 
-    # Pass 1: Mark Correct (Green)
+    # PASS 1: Mark all CORRECT (Green) matches and remove them from the pool
     for i in range(5):
         if guess_list[i] == target_list[i]:
             status_array[i] = "correct"
-            target_list[i] = None  # Remove so it isn't used for Yellow
+            target_list[i] = None 
 
-    # Pass 2: Mark Present (Yellow)
+    # PASS 2: Mark remaining as PRESENT (Yellow) ONLY if they exist in the remaining pool
     for i in range(5):
-        if status_array[i] == "absent":
-            if guess_list[i] in target_list:
-                status_array[i] = "present"
-                target_list[target_list.index(guess_list[i])] = None # Handle duplicates
+        if status_array[i] == "correct":
+            continue
+            
+        if guess_list[i] in target_list and guess_list[i] is not None:
+            status_array[i] = "present"
+            # Consume this specific letter instance so it isn't used again
+            target_list[target_list.index(guess_list[i])] = None
             
     return {
         "status_array": status_array,
