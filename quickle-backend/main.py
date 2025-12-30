@@ -730,8 +730,8 @@ WORDS = ["REACT", "PYTHON", "SMART", "CLOUD", "LOGIC", "PLATE", "SMILE"]
 import hashlib
 from datetime import datetime
 
-def get_daily_word(game_id=None, user_id=None, db=None):
-    """Get the daily word based on current date or game session, ensuring uniqueness for users"""
+def get_daily_word(game_id=None):
+    """Get the daily word based on current date or game session"""
     today = datetime.utcnow().date()
     date_string = today.isoformat()
 
@@ -739,46 +739,14 @@ def get_daily_word(game_id=None, user_id=None, db=None):
     if game_id:
         date_string += game_id
 
-    # For logged-in users, ensure the word hasn't been used before
-    if user_id and db:
-        used_words = db.query(UsedWords.word).filter(UsedWords.user_id == user_id).all()
-        used_word_set = {word[0] for word in used_words}
-
-        # Keep trying different hashes until we find an unused word
-        attempt = 0
-        while attempt < len(DAILY_ANSWERS):
-            attempt_date_string = date_string + str(attempt)
-            hash_object = hashlib.md5(attempt_date_string.encode())
-            hash_int = int(hash_object.hexdigest(), 16)
-            word_index = hash_int % len(DAILY_ANSWERS)
-            candidate_word = DAILY_ANSWERS[word_index]
-
-            if candidate_word not in used_word_set:
-                return candidate_word
-
-            attempt += 1
-
-        # If all words have been used (unlikely but possible), return the first one
-        return DAILY_ANSWERS[0]
-    else:
-        # For non-logged-in users, use the original logic
-        hash_object = hashlib.md5(date_string.encode())
-        hash_int = int(hash_object.hexdigest(), 16)
-        word_index = hash_int % len(DAILY_ANSWERS)
-        return DAILY_ANSWERS[word_index]
+    hash_object = hashlib.md5(date_string.encode())
+    hash_int = int(hash_object.hexdigest(), 16)
+    word_index = hash_int % len(DAILY_ANSWERS)
+    return DAILY_ANSWERS[word_index]
 
 @app.get("/api/wordle/daily-word")
 async def get_daily_word_endpoint(gameId: str = None, request: Request = None, db: Session = Depends(get_db)):
-    # Get user_id if logged in
-    user_id = None
-    if request:
-        session_id = request.cookies.get("session_id")
-        if session_id:
-            user = db.query(User).filter(User.id == int(session_id)).first()
-            if user:
-                user_id = user.id
-
-    word = get_daily_word(gameId, user_id, db)
+    word = get_daily_word(gameId)
     return {"word": word}
 
 @app.get("/api/wordle/next-reset")
@@ -798,15 +766,8 @@ async def verify_guess(payload: dict, request: Request, db: Session = Depends(ge
     if guess not in VALID_GUESSES:
         return {"error": "Not a valid word."}
     
-    user_id = None
-    session_id = request.cookies.get("session_id")
-    if session_id:
-        user = db.query(User).filter(User.id == int(session_id)).first()
-        if user:
-            user_id = user.id
-    
     # Strictly fetch the word tied to the game_id session
-    target_word = get_daily_word(game_id, user_id, db).upper()
+    target_word = get_daily_word(game_id).upper()
     
     # Correct Wordle logic using Counter for proper handling of duplicate letters
     status_array = ["absent"] * 5
