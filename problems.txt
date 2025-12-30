@@ -1,3 +1,5 @@
+game is not following wordle concept(make game follow wordle concept)
+
 email system signup
 
 use formula based leaderboard ranking!!(points / root number of days) along with showing rank,name,no.of days played and L-points!!
@@ -5,6 +7,14 @@ use formula based leaderboard ranking!!(points / root number of days) along with
 leaderboard monthly reset and the winner(1ST RANK) of the month(with month name like Jan,Feb,Mar,etc..) 
 should be shown outside above the leaderboard and below the profile icon!!
 
+add leaderboard in profile dropdown
+
 streak issue(users guesses)
 
 responsive to all screen size devices in such a way that from title to all guess boxes are perfectly fit to screen completely from top to bottom!!
+
+add winning sound after guessing the word!!(different for each guess)(if guessed in first guess, then huh! FLUKE sound effect)
+
+remove all players and reset leaderboard!! and ll points system
+
+deploy
