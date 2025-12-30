@@ -102,7 +102,6 @@ function App() {
     const [currentGuess, setCurrentGuess] = useState('');
     const [solvedStatuses, setSolvedStatuses] = useState([]);
     const [gameState, setGameState] = useState('playing');
-    const [score, setScore] = useState(0);
     const [systemWord, setSystemWord] = useState('');
     const [toastMessage, setToastMessage] = useState(null);
     const [isLocked, setIsLocked] = useState(false);
@@ -111,8 +110,7 @@ function App() {
     const [leaderboardData, setLeaderboardData] = useState([]);
     const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
     const [statsData, setStatsData] = useState(null);
-    const [timerSeconds, setTimerSeconds] = useState(0);
-    const [isTimerActive, setIsTimerActive] = useState(false);
+    // Wordle doesn't use a scoring/timer system; keep state minimal
     const [isMobile, setIsMobile] = useState(false);
     
     // Logic Ref to prevent flickering re-opens
@@ -139,7 +137,7 @@ function App() {
     const fetchSystemWord = useCallback(async (id) => {
         try {
             const res = await axios.get(`${API_BASE_URL}/wordle/daily-word?gameId=${id}`);
-            const word = res.data.word.upperCase ? res.data.word.toUpperCase() : res.data.word;
+            const word = (res.data && res.data.word) ? String(res.data.word).toUpperCase() : "";
             setSystemWord(word);
             return word;
         } catch (e) { return ""; }
@@ -151,18 +149,19 @@ function App() {
             guesses: data.guesses || guesses,
             solvedStatuses: data.solvedStatuses || solvedStatuses,
             gameState: data.gameState || gameState,
-            score: data.score || score,
+            // score removed to follow Wordle rules; keep for backward-compat
+            score: data.score || 0,
             systemWord: data.systemWord || systemWord,
             gameId, date: today
         }));
-    }, [guesses, solvedStatuses, gameState, score, systemWord, gameId]);
+    }, [guesses, solvedStatuses, gameState, systemWord, gameId]);
 
-    const showStatistics = useCallback(async (pts, win) => {
+    const showStatistics = useCallback(async (win) => {
         try {
             const res = await axios.get(`${API_BASE_URL}/user/stats`);
             setStatsData(res.data);
         } catch (e) {
-            setStatsData({ times_played: 1, streak: win ? 1 : 0, max_streak: 1, win_percentage: win ? 100 : 0, total_points: pts, is_logged_in: false });
+            setStatsData({ times_played: 1, streak: win ? 1 : 0, max_streak: 1, win_percentage: win ? 100 : 0, total_points: 0, is_logged_in: false });
         }
         setIsStatsModalOpen(true);
     }, []);
@@ -176,12 +175,11 @@ function App() {
                 setGuesses(data.guesses || []);
                 setSolvedStatuses(data.solvedStatuses || []);
                 setGameState(data.gameState || 'playing');
-                setScore(data.score || 0);
                 setSystemWord(data.systemWord || '');
                 setIsLocked(data.gameState !== 'playing');
                 if (data.gameState !== 'playing' && !hasAutoShownStats.current) {
                     hasAutoShownStats.current = true;
-                    setTimeout(() => showStatistics(data.score, data.gameState === 'won'), 1000);
+                    setTimeout(() => showStatistics(data.gameState === 'won'), 1000);
                 }
                 return;
             }
@@ -209,7 +207,8 @@ function App() {
         try {
             const res = await axios.post(`${API_BASE_URL}/wordle/guess`, { guess: currentGuess, gameId });
             if (res.data.error) {
-                setToastMessage("Enter only meaningful words!");
+                // Use backend error message when available
+                setToastMessage(res.data.error || "Not in word list.");
                 setShakeRow(guesses.length);
                 setTimeout(() => setShakeRow(null), 500);
                 return;
@@ -219,21 +218,20 @@ function App() {
             const newS = [...solvedStatuses, status_array];
             setGuesses(newG); setSolvedStatuses(newS); setCurrentGuess('');
             if (is_correct) {
-                const pts = score + (newG.length <= 5 ? {1:25, 2:18, 3:15, 4:12, 5:6}[newG.length] : (timerSeconds <= 5 ? 5 : timerSeconds <= 9 ? 3 : 1));
-                setScore(pts); setGameState('won'); setIsTimerActive(false);
-                saveGameState({ guesses: newG, solvedStatuses: newS, gameState: 'won', score: pts });
-                showStatistics(pts, true);
-                if (user) await axios.post(`${API_BASE_URL}/user/update-stats`, { won: true, points: pts, word: systemWord });
+                setGameState('won');
+                saveGameState({ guesses: newG, solvedStatuses: newS, gameState: 'won', score: 0, systemWord });
+                showStatistics(true);
+                if (user) await axios.post(`${API_BASE_URL}/user/update-stats`, { won: true, points: 0, word: systemWord });
             } else if (newG.length === 6) {
-                const pts = score - 5; setScore(pts); setGameState('lost'); setIsTimerActive(false);
-                saveGameState({ guesses: newG, solvedStatuses: newS, gameState: 'lost', score: pts });
-                showStatistics(pts, false);
-                if (user) await axios.post(`${API_BASE_URL}/user/update-stats`, { won: false, points: -5, word: systemWord });
-            } else if (newG.length === 5) { setIsTimerActive(true); setTimerSeconds(0); }
+                setGameState('lost');
+                saveGameState({ guesses: newG, solvedStatuses: newS, gameState: 'lost', score: 0, systemWord });
+                showStatistics(false);
+                if (user) await axios.post(`${API_BASE_URL}/user/update-stats`, { won: false, points: 0, word: systemWord });
+            }
             fetchLeaderboard();
         } catch (e) { setShakeRow(guesses.length); setTimeout(() => setShakeRow(null), 500); }
         finally { setIsSubmitting(false); }
-    }, [currentGuess, guesses, solvedStatuses, gameId, score, systemWord, user, isLocked, isSubmitting, timerSeconds, saveGameState, showStatistics, fetchLeaderboard]);
+    }, [currentGuess, guesses, solvedStatuses, gameId, systemWord, user, isLocked, isSubmitting, saveGameState, showStatistics, fetchLeaderboard]);
 
     const handleKeyPress = useCallback((key) => {
         if (gameState !== 'playing' || isStatsModalOpen || isLocked || isSubmitting) return;
@@ -254,8 +252,7 @@ function App() {
             <ThemeButton theme={theme} toggleTheme={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} />
             {user ? <UserMenu /> : <button className="login-btn" onClick={openAuthModal}>Signup/Login</button>}
             {leaderboardData.length > 0 && <Leaderboard data={leaderboardData} />}
-            {isTimerActive && <div className="timer-display">{timerSeconds.toString().padStart(2, '0')}s / 12s</div>}
-            <header className="header"><BitTitle text="QUICKLE" /><div className="score-display">Score: {score} pts</div></header>
+            <header className="header"><BitTitle text="QUICKLE" /></header>
             <div className="board">
                 {Array.from({ length: 6 }).map((_, i) => (
                     <Row key={i} guess={i === guesses.length ? currentGuess : (guesses[i] || "")} solutionStatus={solvedStatuses[i]} isShaking={shakeRow === i} />

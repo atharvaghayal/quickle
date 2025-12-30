@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
+from collections import Counter
 
 # 1. LOAD ENVIRONMENT VARIABLES
 # Using Path(__file__) ensures the .env is found regardless of where you start uvicorn
@@ -807,26 +808,23 @@ async def verify_guess(payload: dict, request: Request, db: Session = Depends(ge
     # Strictly fetch the word tied to the game_id session
     target_word = get_daily_word(game_id, user_id, db).upper()
     
-    # COORDINATION LOGIC: Two-Pass Tracing
+    # Correct Wordle logic using Counter for proper handling of duplicate letters
     status_array = ["absent"] * 5
-    target_list = list(target_word)
-    guess_list = list(guess)
-
-    # PASS 1: Mark all CORRECT (Green) matches and remove them from the pool
+    target_count = Counter(target_word)
+    
+    # PASS 1: Mark all CORRECT (Green) matches and decrement counts
     for i in range(5):
-        if guess_list[i] == target_list[i]:
+        if guess[i] == target_word[i]:
             status_array[i] = "correct"
-            target_list[i] = None 
-
-    # PASS 2: Mark remaining as PRESENT (Yellow) ONLY if they exist in the remaining pool
+            target_count[guess[i]] -= 1
+    
+    # PASS 2: Mark PRESENT (Yellow) for remaining letters if they exist in target
     for i in range(5):
         if status_array[i] == "correct":
             continue
-            
-        if guess_list[i] in target_list and guess_list[i] is not None:
+        if guess[i] in target_count and target_count[guess[i]] > 0:
             status_array[i] = "present"
-            # Consume this specific letter instance so it isn't used again
-            target_list[target_list.index(guess_list[i])] = None
+            target_count[guess[i]] -= 1
             
     return {
         "status_array": status_array,
