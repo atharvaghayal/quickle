@@ -152,8 +152,7 @@ function App() {
     const [solvedStatuses, setSolvedStatuses] = useState([]); 
     const [gameState, setGameState] = useState('playing'); 
     const [score, setScore] = useState(0); 
-    const [systemWord, setSystemWord] = useState(''); 
-    const [gameId, setGameId] = useState(null); 
+    const [systemWord, setSystemWord] = useState('');
     const [toastMessage, setToastMessage] = useState(null); 
     const [isLocked, setIsLocked] = useState(false); // Device-level one-play lock
     const [showLockModal, setShowLockModal] = useState(false);
@@ -275,18 +274,31 @@ function App() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
     
-    const fetchSystemWord = useCallback(async (gameId = null) => {
-        try {
-            const currentGameId = gameId || Date.now().toString();
-            setGameId(currentGameId);
-            const url = `${API_BASE_URL}/wordle/daily-word?gameId=${currentGameId}`;
-            const wordResponse = await axios.get(url);
-            setSystemWord(wordResponse.data.word || "QUICK"); 
-        } catch (error) {
-            console.error("Error fetching daily word:", error);
-            setSystemWord("QUICK"); 
-        }
-    }, []);
+    // Change 1: Ensure gameId is persistent for the session
+const [gameId, setGameId] = useState(() => {
+    // Check if we have an ongoing game in localStorage, otherwise create one
+    const saved = localStorage.getItem('quickle_game_state');
+    if (saved) return JSON.parse(saved).gameId || Date.now().toString();
+    return Date.now().toString();
+});
+
+// Change 2: Ensure the systemWord is fetched ONCE and strictly tied to that ID
+const fetchSystemWord = useCallback(async () => {
+    try {
+        const url = `${API_BASE_URL}/wordle/daily-word?gameId=${gameId}`;
+        const wordResponse = await axios.get(url);
+        const word = wordResponse.data.word.toUpperCase();
+        setSystemWord(word);
+        
+        // Save the gameId into the persistence layer
+        const saved = localStorage.getItem('quickle_game_state');
+        const state = saved ? JSON.parse(saved) : {};
+        localStorage.setItem('quickle_game_state', JSON.stringify({...state, gameId}));
+        
+    } catch (error) {
+        console.error("Error fetching word:", error);
+    }
+}, [gameId]);
 
     const todayKey = new Date().toISOString().slice(0, 10);
     useEffect(() => {

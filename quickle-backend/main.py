@@ -790,33 +790,39 @@ async def verify_guess(payload: dict, request: Request, db: Session = Depends(ge
     guess = payload.get("guess", "").upper()
     game_id = payload.get("gameId")
     
-    if len(guess) != 5:
-        return {"error": "Guess must be exactly 5 letters"}
-    
-    # Check if the word exists in our comprehensive list
-    if guess not in VALID_GUESSES:
-        # We return a specific error message that the frontend will catch
-        return {"error": "NOT_A_VALID_WORD"}
-    
-    # Get user_id if logged in
+    # Identify user context
     user_id = None
     session_id = request.cookies.get("session_id")
     if session_id:
         user = db.query(User).filter(User.id == int(session_id)).first()
-        if user:
-            user_id = user.id
+        if user: user_id = user.id
     
-    target_word = get_daily_word(game_id, user_id, db)
-    
-    # Simple logic for status array
-    status_array = []
-    for i, char in enumerate(guess):
-        if char == target_word[i]:
-            status_array.append("correct")
-        elif char in target_word:
-            status_array.append("present")
-        else:
-            status_array.append("absent")
+    # Retrieve the word using the LOCKED game_id
+    target_word = get_daily_word(game_id, user_id, db).upper()
+
+    # Basic Validation
+    if len(guess) != 5:
+        return {"error": "Guess must be exactly 5 letters"}
+    if guess not in VALID_GUESSES:
+        return {"error": "Not a valid word."}
+
+    # Proper Wordle Algorithm (Two-Pass)
+    status_array = ["absent"] * 5
+    target_list = list(target_word)
+    guess_list = list(guess)
+
+    # Pass 1: Mark Correct (Green)
+    for i in range(5):
+        if guess_list[i] == target_list[i]:
+            status_array[i] = "correct"
+            target_list[i] = None  # Remove so it isn't used for Yellow
+
+    # Pass 2: Mark Present (Yellow)
+    for i in range(5):
+        if status_array[i] == "absent":
+            if guess_list[i] in target_list:
+                status_array[i] = "present"
+                target_list[target_list.index(guess_list[i])] = None # Handle duplicates
             
     return {
         "status_array": status_array,
