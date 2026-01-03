@@ -1,4 +1,3 @@
 forgot password feature!!
 clean word list(only 5 letters)
 add missing 5 letter words taking from users!!
-atharvaghayal
