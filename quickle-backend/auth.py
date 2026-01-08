@@ -6,6 +6,7 @@ from typing import Optional
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
 
 # 1. LOAD ENVIRONMENT VARIABLES
 # Explicitly find the .env file in the current folder
@@ -56,13 +57,16 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import secrets
-from datetime import timedelta
 
 def send_email(to_email: str, subject: str, body: str):
     smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
     smtp_port = int(os.getenv("SMTP_PORT", 587))
     smtp_user = os.getenv("SMTP_USER")
     smtp_pass = os.getenv("SMTP_PASS")
+
+    if not smtp_user or not smtp_pass:
+        print(f"Email not sent (SMTP not configured): To: {to_email}, Subject: {subject}")
+        return
 
     msg = MIMEMultipart()
     msg['From'] = smtp_user
@@ -78,6 +82,7 @@ def send_email(to_email: str, subject: str, body: str):
         text = msg.as_string()
         server.sendmail(smtp_user, to_email, text)
         server.quit()
+        print(f"Email sent successfully to {to_email}")
     except Exception as e:
         print(f"Email send failed: {e}")
 
@@ -98,6 +103,54 @@ async def update_password(request: UpdatePasswordRequest, req: Request, db: Sess
     db.commit()
     
     return {"message": "Password updated successfully"}
+
+@auth_router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    user = get_user_by_email(db, request.email)
+    if not user:
+        # Don't reveal if email exists or not for security
+        return {"message": "If the email is registered, a reset link has been sent."}
+    
+    # Generate reset token
+    reset_token = secrets.token_urlsafe(32)
+    reset_expires = datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
+    
+    user.reset_token = reset_token
+    user.reset_expires = reset_expires
+    db.commit()
+    
+    # Send reset email
+    reset_url = f"http://localhost:3000/?token={reset_token}"
+    body = f"""
+    <html>
+    <body>
+        <h2>Password Reset Request</h2>
+        <p>You requested a password reset for your Quickle account.</p>
+        <p>Click the link below to reset your password:</p>
+        <a href="{reset_url}">Reset Password</a>
+        <p>This link will expire in 1 hour.</p>
+        <p>If you didn't request this reset, please ignore this email.</p>
+    </body>
+    </html>
+    """
+    
+    send_email(user.email, "Quickle Password Reset", body)
+    
+    return {"message": "If the email is registered, a reset link has been sent."}
+
+@auth_router.post("/reset-password")
+async def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    user = get_user_by_reset_token(db, request.token)
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+    
+    # Update password
+    user.hashed_password = pwd_context.hash(request.new_password)
+    user.reset_token = None
+    user.reset_expires = None
+    db.commit()
+    
+    return {"message": "Password reset successfully"}
 
 @auth_router.post("/signup")
 async def signup(user: SignupRequest, db: Session = Depends(get_db)):

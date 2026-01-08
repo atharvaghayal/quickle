@@ -1,3 +1,14 @@
-forgot password feature!!
-clean word list(only 5 letters)
 add missing 5 letter words taking from users!!
+
+GPT points system for formula!!
+conect points system to game for each and every user
+total points = points scored by user.
+leaderboard points = points scored by user with respect to no of days for leaderboard!!
+add this is profile.html and leaderboard.html as well
+leaderboard resets after month(exact monthend 30/31 date of month)
+winner user of mont should be displayed in between profile icon and leaderboard in format "👑 username 👑"
+
+GPT streak functionaing and take prompt
+make streak work
+change 6th guess timings to 10 sec, 15 sec, 30 sec and more than 30 sec
+responsive to all devices!!

@@ -72,7 +72,7 @@ const StatsModal = ({ stats, onClose, resetTime, formatTime, answerWord, isWin, 
                     </p>
                 )}
                 <div className="footer-credit">
-                    Quickle-Word Game | Built with ❤️ by Atharva Ghayal
+                    Quickle-Word Game | Built with ❤️ by <a href="https://chess.com">Atharva Ghayal</a>
                 </div>
 
             </div>

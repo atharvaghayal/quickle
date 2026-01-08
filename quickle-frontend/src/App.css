@@ -16,7 +16,7 @@
   --color-empty-border: var(--color-text-primary); /* White border for empty/typing */
   
   /* LIGHT THEME VARIABLES */
-  --color-light-bg: #f8f8f8; /* Cream/Off-White */
+  --color-light-bg: #fcdb6d; /* Cream color */
   --color-light-text-primary: #000000;
   
   /* GAME STATUS COLORS (Keep these consistent between themes) */
@@ -35,23 +35,7 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  font-family: 'Courier New', Courier, monospace; 
-}
-
-/* --- LIGHT THEME OVERRIDES --- */
-body.light-theme {
-    /* Sets the background for the entire page */
-    background-color: var(--color-light-bg);
-    color: var(--color-light-text-primary);
-    
-    /* Global Variables */
-    --color-text-primary: var(--color-light-text-primary); /* Black text */
-    --color-icon-border: var(--color-light-text-primary); /* Black icons/borders */
-
-    /* TILE/BLOCK OVERRIDES */
-    --color-tile-bg: var(--color-light-bg); /* Off-white block background */
-    --color-tile-letter: var(--color-light-text-primary); /* Black letters */
-    --color-empty-border: var(--color-light-text-primary); /* Black border for empty/typing */
+  font-family: 'Courier New', Courier, monospace;
 }
 
 .App {
@@ -62,20 +46,6 @@ body.light-theme {
   position: static; 
   /* CRITICAL: Ensure .App is transparent to show body background */
   background-color: transparent; 
-}
-
-/* --- ICON STYLING (Fixed to Viewport) --- */
-/* --- ICON POSITIONING --- */
-.help-icon, .theme-icon, .login-btn { 
-    position: fixed; 
-    right: 20px;
-    top: 20px;
-    cursor: pointer;
-    user-select: none;
-    z-index: 1000; 
-    
-    color: var(--color-text-primary);
-    border: 2px solid var(--color-icon-border);
 }
 
 .help-icon {
@@ -422,14 +392,15 @@ body.light-theme .lock-modal {
     background: #000000; /* Pure black background */
     color: var(--color-text-primary);
     border: 2px solid var(--color-icon-border);
-    padding: 30px;
-    width: 90%;
-    max-width: 400px;
-    border-radius: 12px;
+    padding: clamp(20px, 5vw, 30px);
+    width: 100%;
+    max-width: clamp(320px, 90vw, 400px);
+    border-radius: clamp(8px, 2vw, 12px);
     box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); /* Slight green glow */
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: clamp(15px, 3vw, 20px);
+    box-sizing: border-box;
 }
 
 body.light-theme .auth-modal {
@@ -543,6 +514,91 @@ body.light-theme .auth-modal {
     text-decoration: underline;
 }
 
+/* --- RESET PASSWORD --- */
+.reset-password {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 15000;
+    padding: clamp(10px, 2vw, 20px);
+    box-sizing: border-box;
+}
+
+.reset-password > div {
+    background: #000000;
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-icon-border);
+    padding: clamp(20px, 5vw, 30px);
+    width: 100%;
+    max-width: clamp(320px, 90vw, 400px);
+    border-radius: clamp(8px, 2vw, 12px);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(15px, 3vw, 20px);
+    box-sizing: border-box;
+}
+
+body.light-theme .reset-password > div {
+    background: #fff;
+    color: var(--color-light-text-primary);
+}
+
+.reset-password h2 {
+    text-align: center;
+    margin: 0;
+    color: var(--color-green);
+}
+
+.reset-password form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.reset-password input {
+    width: 100%;
+    padding: 12px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    box-sizing: border-box;
+}
+
+body.light-theme .reset-password input {
+    background: #f5f5f5;
+    color: #000;
+    border: 1px solid #ccc;
+}
+
+.reset-password button {
+    width: 100%;
+    padding: 14px;
+    background: var(--color-green);
+    color: #000;
+    border: none;
+    font-size: 1em;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.reset-password .error {
+    color: #ff6b6b;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+.reset-password .success {
+    color: var(--color-green);
+    text-align: center;
+}
+
 /* --- USER MENU --- */
 .user-menu-wrapper {
     position: fixed;
@@ -612,10 +668,10 @@ body.light-theme .user-menu {
 
 .user-profile-icon {
     position: fixed;
-    right: 20px;
-    top: 20px;
-    width: 40px;
-    height: 40px;
+    right: clamp(10px, 2vw, 20px);
+    top: clamp(10px, 2vw, 20px);
+    width: var(--icon-size);
+    height: var(--icon-size);
     background-color: var(--color-green); /* Your #00ff00 green */
     color: #000; /* Black letter for contrast on green */
     border-radius: 50%;
@@ -623,7 +679,7 @@ body.light-theme .user-menu {
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 1.2rem;
+    font-size: clamp(0.9rem, 2.5vw, 1.2rem);
     cursor: pointer;
     z-index: 1000;
     border: 2px solid var(--color-icon-border);
@@ -637,60 +693,92 @@ body.light-theme .user-menu {
 
 /* --- Virtual Keyboard Styles --- */
 .virtual-keyboard {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    width: 332px; /* Exact width of 5 tiles: 5*60px + 4*8px gaps */
+    margin: 20px auto 0; /* Center horizontally, add space from board */
     background-color: var(--color-dark-bg);
-    padding: 10px;
-    border-top: 2px solid var(--color-gray);
+    padding: 8px 4px;
+    border-radius: 6px;
+    border: 2px solid var(--color-gray);
     z-index: 1000;
 }
 
 body.light-theme .virtual-keyboard {
     background-color: var(--color-light-bg);
-    border-top-color: var(--color-gray);
+    border-color: var(--color-gray);
 }
 
 .keyboard-row {
     display: flex;
     justify-content: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .key-btn {
-    background-color: var(--color-gray);
-    color: var(--color-text-primary);
-    border: 1px solid var(--color-icon-border);
+    background-color: #d3d6da;
+    color: #000;
+    border: none;
     border-radius: 4px;
-    padding: 12px 8px;
+    padding: 12px 6px;
     margin: 0 2px;
     font-family: 'Courier New', Courier, monospace;
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: bold;
     cursor: pointer;
-    min-width: 32px;
-    transition: background-color 0.2s ease;
+    min-width: 28px;
+    height: 48px;
+    transition: all 0.1s ease;
+    text-transform: uppercase;
 }
 
 .key-btn:hover {
-    background-color: var(--color-yellow);
-    color: #000;
+    background-color: #c5c8cc;
 }
 
 .key-btn:active {
-    background-color: var(--color-green);
-    color: #000;
+    transform: scale(0.95);
+}
+
+/* Wordle-style keyboard key statuses */
+.key-btn.correct {
+    background-color: #6aaa64;
+    color: #fff;
+}
+
+.key-btn.present {
+    background-color: #c9b458;
+    color: #fff;
+}
+
+.key-btn.absent {
+    background-color: #787c7e;
+    color: #fff;
 }
 
 .key-wide {
     flex: 1.5;
-    max-width: 80px;
+    max-width: 65px;
+    font-size: 0.8rem;
 }
 
-/* Mobile adjustments */
-.App.mobile {
-    padding-bottom: 200px; /* Space for virtual keyboard */
+/* Always add space for keyboard */
+.App {
+    /* Removed padding-bottom since keyboard is now positioned relative to board */
+}
+
+/* Mobile adjustments - smaller on mobile */
+@media (max-width: 768px) {
+    .key-btn {
+        height: 42px;
+        padding: 10px 4px;
+        font-size: 0.8rem;
+        min-width: 24px;
+    }
+    
+    .key-wide {
+        max-width: 55px;
+        font-size: 0.7rem;
+    /* Removed padding-bottom since keyboard is now relative */
+}
 }
 
 @keyframes shake {
@@ -743,19 +831,20 @@ body.light-theme .virtual-keyboard {
 /* --- Leaderboard Positioning & Design --- */
 .leaderboard-container {
     position: fixed;
-    right: 20px;
-    top: 55%; 
+    right: clamp(10px, 2vw, 20px);
+    top: 50%;
     transform: translateY(-50%);
     /* Increased width */
-    width: 280px; 
+    width: clamp(240px, 25vw, 280px);
     background: rgba(0, 0, 0, 0.85);
-    border: 3px solid var(--color-icon-border); /* Increased outline thickness */
-    border-radius: 10px;
-    padding: 15px;
+    border: clamp(2px, 0.5vw, 3px) solid var(--color-icon-border); /* Increased outline thickness */
+    border-radius: clamp(6px, 1.5vw, 10px);
+    padding: clamp(10px, 2vw, 15px);
     font-family: 'Courier New', monospace;
     z-index: 900;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
 }
 
 .leaderboard-scroll-area {
@@ -825,3 +914,240 @@ body.light-theme .leaderboard-container { background: rgba(255, 255, 255, 0.95);
 }
 
 body.light-theme .rank-normal { background: #eee; color: #000; border-color: #ccc; }
+
+/* ==========================================
+   COMPREHENSIVE RESPONSIVE DESIGN
+   ========================================== */
+
+/* Tablet Styles (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .App {
+        max-width: 600px;
+    }
+
+    .leaderboard-container {
+        width: clamp(220px, 22vw, 260px);
+        top: 55%;
+    }
+
+    .virtual-keyboard {
+        max-width: calc(5 * var(--tile-size) + 4 * var(--board-gap));
+    }
+}
+
+/* Mobile Landscape (481px - 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+    .App {
+        max-width: 480px;
+        padding: clamp(8px, 1.5vw, 15px);
+    }
+
+    .header {
+        margin-bottom: clamp(20px, 6vh, 40px);
+    }
+
+    .board {
+        margin-bottom: clamp(10px, 2vh, 20px);
+    }
+
+    .leaderboard-container {
+        width: clamp(200px, 35vw, 240px);
+        top: 60%;
+        right: clamp(8px, 1.5vw, 15px);
+        padding: clamp(8px, 1.5vw, 12px);
+    }
+
+    .virtual-keyboard {
+        padding: clamp(4px, 1vw, 6px) clamp(2px, 0.5vw, 3px);
+    }
+}
+
+/* Small Mobile (320px - 480px) */
+@media (max-width: 480px) {
+    .App {
+        max-width: 100%;
+        padding: clamp(5px, 1vw, 10px);
+    }
+
+    .header {
+        margin-bottom: clamp(15px, 4vh, 25px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(2rem, 7vw, 2.8rem);
+    }
+
+    .board {
+        margin-bottom: clamp(8px, 1.5vh, 15px);
+    }
+
+    /* Hide leaderboard on very small screens to save space */
+    .leaderboard-container {
+        display: none;
+    }
+
+    .virtual-keyboard {
+        padding: clamp(3px, 0.8vw, 5px) clamp(1px, 0.3vw, 2px);
+    }
+
+    .keyboard-row {
+        margin-bottom: clamp(2px, 0.5vw, 4px);
+    }
+
+    /* Stack icons vertically on very small screens */
+    .help-icon {
+        top: clamp(8px, 1.5vw, 12px);
+        left: clamp(8px, 1.5vw, 12px);
+    }
+
+    .theme-icon {
+        right: clamp(8px, 1.5vw, 12px);
+        top: clamp(50px, 10vw, 70px);
+    }
+
+    .login-btn, .user-profile-icon {
+        right: clamp(8px, 1.5vw, 12px);
+        top: clamp(8px, 1.5vw, 12px);
+    }
+}
+
+/* Large Desktop (1440px+) */
+@media (min-width: 1440px) {
+    .App {
+        max-width: 550px;
+    }
+
+    .leaderboard-container {
+        width: clamp(280px, 18vw, 320px);
+        right: clamp(20px, 2vw, 30px);
+    }
+}
+
+/* Ultra-wide screens (1920px+) */
+@media (min-width: 1920px) {
+    .App {
+        max-width: 600px;
+    }
+
+    .leaderboard-container {
+        width: clamp(300px, 15vw, 350px);
+    }
+}
+
+/* Portrait orientation adjustments */
+@media (orientation: portrait) and (max-height: 600px) {
+    /* Short portrait screens (like some phones in landscape) */
+    .header {
+        margin-bottom: clamp(10px, 2vh, 20px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(1.8rem, 5vw, 2.5rem);
+    }
+
+    .board {
+        margin-bottom: clamp(5px, 1vh, 10px);
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Increase touch targets for touch devices */
+    .key-btn {
+        min-height: clamp(44px, 9vh, 52px);
+        margin: 0 clamp(2px, 0.4vw, 3px);
+    }
+
+    .tile {
+        min-width: clamp(44px, 10vw, 60px);
+        min-height: clamp(44px, 10vw, 60px);
+    }
+
+    /* Larger icons for touch */
+    .help-icon, .theme-icon, .user-profile-icon {
+        width: clamp(40px, 8vw, 50px);
+        height: clamp(40px, 8vw, 50px);
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Ensure crisp borders on high-DPI screens */
+    .tile, .key-btn, .modal-overlay > * {
+        border-width: clamp(1px, 0.3vw, 2px);
+    }
+}
+
+/* Focus states for accessibility */
+.key-btn:focus,
+.help-icon:focus,
+.theme-icon:focus,
+.login-btn:focus,
+.user-profile-icon:focus {
+    outline: 2px solid var(--color-yellow);
+    outline-offset: 2px;
+}
+
+.tile:focus {
+    outline: 2px solid var(--color-green);
+    outline-offset: 1px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark mode preference support */
+@media (prefers-color-scheme: dark) {
+    body:not(.light-theme) {
+        background-color: #000000;
+        color: #ffffff;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    body.light-theme {
+        background-color: #fcdb6d;
+        color: #000000;
+    }
+}
+
+/* Safe area support for devices with notches */
+@supports (padding: max(0px)) {
+    .App {
+        padding-left: max(10px, env(safe-area-inset-left));
+        padding-right: max(10px, env(safe-area-inset-right));
+        padding-top: max(10px, env(safe-area-inset-top));
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+
+    .modal-overlay {
+        padding-left: max(10px, env(safe-area-inset-left));
+        padding-right: max(10px, env(safe-area-inset-right));
+        padding-top: max(10px, env(safe-area-inset-top));
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Print styles (hide interactive elements) */
+@media print {
+    .help-icon, .theme-icon, .login-btn, .user-profile-icon,
+    .virtual-keyboard, .leaderboard-container {
+        display: none !important;
+    }
+
+    .App {
+        max-width: none;
+        padding: 0;
+    }
+
+    body {
+        background: white !important;
+        color: black !important;
+    }
+}

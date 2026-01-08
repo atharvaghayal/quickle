@@ -36,7 +36,7 @@ const Leaderboard = ({ data }) => (
     </div>
 );
 
-const VirtualKeyboard = ({ onKeyPress }) => {
+const VirtualKeyboard = ({ onKeyPress, letterStatuses = {} }) => {
     const rows = [
         ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
         ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
@@ -46,11 +46,18 @@ const VirtualKeyboard = ({ onKeyPress }) => {
         <div className="virtual-keyboard">
             {rows.map((row, i) => (
                 <div key={i} className="keyboard-row">
-                    {row.map((key) => (
-                        <button key={key} className={`key-btn ${key === 'Enter' || key === 'Backspace' ? 'key-wide' : ''}`} onClick={() => onKeyPress(key)}>
-                            {key === 'Backspace' ? '⌫' : key === 'Enter' ? 'ENTER' : key}
-                        </button>
-                    ))}
+                    {row.map((key) => {
+                        const status = letterStatuses[key] || '';
+                        return (
+                            <button 
+                                key={key} 
+                                className={`key-btn ${key === 'Enter' || key === 'Backspace' ? 'key-wide' : ''} ${status}`}
+                                onClick={() => onKeyPress(key)}
+                            >
+                                {key === 'Backspace' ? '⌫' : key === 'Enter' ? 'ENTER' : key}
+                            </button>
+                        );
+                    })}
                 </div>
             ))}
         </div>
@@ -112,11 +119,41 @@ function App() {
     const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
     const [statsData, setStatsData] = useState(null);
     // Wordle doesn't use a scoring/timer system; keep state minimal
-    const [isMobile, setIsMobile] = useState(false);
     const [isResetMode, setIsResetMode] = useState(false);
     
     // Logic Ref to prevent flickering re-opens
     const hasAutoShownStats = useRef(false);
+
+    // Calculate keyboard letter statuses (Wordle style)
+    const getKeyboardLetterStatuses = useCallback(() => {
+        const letterStatuses = {};
+        
+        // Process all completed guesses
+        guesses.forEach((guess, guessIndex) => {
+            const statusArray = solvedStatuses[guessIndex];
+            if (!statusArray) return;
+            
+            guess.split('').forEach((letter, letterIndex) => {
+                const status = statusArray[letterIndex];
+                const upperLetter = letter.toUpperCase();
+                
+                // Priority: correct > present > absent
+                if (!letterStatuses[upperLetter] || 
+                    (letterStatuses[upperLetter] === 'absent' && status === 'present') ||
+                    (letterStatuses[upperLetter] !== 'correct' && status === 'correct')) {
+                    letterStatuses[upperLetter] = status;
+                }
+            });
+        });
+        
+        return letterStatuses;
+    }, [guesses, solvedStatuses]);
+
+    // Apply theme to body and save to localStorage
+    useEffect(() => {
+        document.body.className = theme === 'light' ? 'light-theme' : '';
+        localStorage.setItem('quickle_theme', theme);
+    }, [theme]);
 
     // FIXED: Lock gameId for the session to prevent synchronization bugs
     const [gameId] = useState(() => {
@@ -193,10 +230,6 @@ function App() {
     useEffect(() => {
         loadGameState();
         fetchLeaderboard();
-        const check = () => setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
-        check();
-        window.addEventListener('resize', check);
-        return () => window.removeEventListener('resize', check);
     }, []); // Empty deps to stop loops
 
     useEffect(() => {
@@ -258,7 +291,7 @@ function App() {
     }, [handleKeyPress, isAuthModalOpen, isResetMode]);
 
     return (
-        <div className={`App ${isMobile ? 'mobile' : ''}`}>
+        <div className={`App ${window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop'}`}>
             {isResetMode ? (
                 <ResetPassword />
             ) : (
@@ -266,14 +299,14 @@ function App() {
                     <div className="help-icon" onClick={redirectToRules}>?</div>
                     <ThemeButton theme={theme} toggleTheme={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} />
                     {user ? <UserMenu /> : <button className="login-btn" onClick={openAuthModal}>Signup/Login</button>}
-                    {leaderboardData.length > 0 && <Leaderboard data={leaderboardData} />}
+                    {leaderboardData.length > 0 && window.innerWidth >= 481 && <Leaderboard data={leaderboardData} />}
                     <header className="header"><BitTitle text="QUICKLE" /></header>
                     <div className="board">
                         {Array.from({ length: 6 }).map((_, i) => (
                             <Row key={i} guess={i === guesses.length ? currentGuess : (guesses[i] || "")} solutionStatus={solvedStatuses[i]} isShaking={shakeRow === i} />
                         ))}
                     </div>
-                    {isMobile && <VirtualKeyboard onKeyPress={handleKeyPress} />}
+                    <VirtualKeyboard onKeyPress={handleKeyPress} letterStatuses={getKeyboardLetterStatuses()} />
                     <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
                     {isStatsModalOpen && statsData && (
                         <StatsModal stats={statsData} onClose={() => setIsStatsModalOpen(false)} answerWord={systemWord} isWin={gameState === 'won'} onPlayAgain={resetGame} />
