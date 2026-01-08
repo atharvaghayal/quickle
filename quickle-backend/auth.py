@@ -161,7 +161,7 @@ async def signup(user: SignupRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already registered")
     
     hashed_pwd = pwd_context.hash(user.password)
-    new_user = User(username=user.username, email=user.email, hashed_password=hashed_pwd, provider='local')
+    new_user = User(username=user.username, email=user.email, hashed_password=hashed_pwd)
     db.add(new_user)
     db.commit()
     return {"message": "User created successfully"}
@@ -191,7 +191,7 @@ async def get_me(request: Request, db: Session = Depends(get_db)):
     if not user:
         return {"user": None}
 
-    return {"user": {"id": user.id, "username": user.username, "provider": user.provider}}
+    return {"user": {"id": user.id, "username": user.username}}
 
 @auth_router.post("/logout")
 async def logout(response: Response):

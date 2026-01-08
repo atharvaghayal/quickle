@@ -22,8 +22,6 @@ const UserMenu = () => {
     // Use user.username as the displayed identifier
     const initial = user.username ? user.username.charAt(0).toUpperCase() : 'U';
 
-    const providerDisplay = !user.provider ? 'Local' : (user.provider === 'local' ? 'Username/Password' : user.provider.charAt(0).toUpperCase() + user.provider.slice(1));
-
     return (
         <div className="user-menu-wrapper" ref={menuRef}>
             <div className="user-avatar" onClick={() => setOpen((prev) => !prev)}>
@@ -33,8 +31,6 @@ const UserMenu = () => {
                 <div className="user-menu">
                     <div className="user-menu__header">
                         <div className="user-menu__name">{user.username}</div>
-                        {/* Provider display */}
-                        <div className="user-menu__provider">Signed in via {providerDisplay}</div>
                     </div>
                     {/* Placeholder for Profile button */}
                     <button className="user-menu__item" onClick={() => window.location.href = '/profile.html'}>Profile</button> 

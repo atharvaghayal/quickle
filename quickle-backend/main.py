@@ -13,7 +13,7 @@ env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 # DEBUG: Verify the keys are loading (Look in your backend terminal)
-print(f"DEBUG: Google ID is {os.getenv('GOOGLE_CLIENT_ID')}")
+# print(f"DEBUG: Google ID is {os.getenv('GOOGLE_CLIENT_ID')}")
 
 # 2. IMPORT INTERNAL MODULES
 # Using absolute imports (no dots) to prevent 'ImportError'

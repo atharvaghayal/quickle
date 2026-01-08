@@ -64,10 +64,6 @@ const VirtualKeyboard = ({ onKeyPress, letterStatuses = {} }) => {
     );
 };
 
-const ThemeButton = ({ theme, toggleTheme }) => (
-    <div className="theme-icon" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</div>
-);
-
 const BitTitle = ({ text }) => (
     <h1 className="title-bitcount">
         {text.split('').map((char, i) => (
@@ -105,7 +101,6 @@ function App() {
     // FIXED: Removed unused 'loading' and 'isAuthModalOpen' to resolve ESLint warnings
     const { user, openAuthModal, isAuthModalOpen } = useAuth();
     
-    const [theme, setTheme] = useState(() => localStorage.getItem('quickle_theme') || 'dark');
     const [guesses, setGuesses] = useState([]);
     const [currentGuess, setCurrentGuess] = useState('');
     const [solvedStatuses, setSolvedStatuses] = useState([]);
@@ -148,12 +143,6 @@ function App() {
         
         return letterStatuses;
     }, [guesses, solvedStatuses]);
-
-    // Apply theme to body and save to localStorage
-    useEffect(() => {
-        document.body.className = theme === 'light' ? 'light-theme' : '';
-        localStorage.setItem('quickle_theme', theme);
-    }, [theme]);
 
     // FIXED: Lock gameId for the session to prevent synchronization bugs
     const [gameId] = useState(() => {
@@ -297,7 +286,6 @@ function App() {
             ) : (
                 <>
                     <div className="help-icon" onClick={redirectToRules}>?</div>
-                    <ThemeButton theme={theme} toggleTheme={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} />
                     {user ? <UserMenu /> : <button className="login-btn" onClick={openAuthModal}>Signup/Login</button>}
                     {leaderboardData.length > 0 && window.innerWidth >= 481 && <Leaderboard data={leaderboardData} />}
                     <header className="header"><BitTitle text="QUICKLE" /></header>

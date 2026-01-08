@@ -11,9 +11,7 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=True)
     # hashed_password will store BCrypt hashes for manual users
-    # or "OAUTH_USER_EXTERNAL" for social users
     hashed_password = Column(String, nullable=False)
-    provider = Column(String, nullable=True)  # 'local', 'google', 'github'
     reset_token = Column(String, nullable=True)
     reset_expires = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
