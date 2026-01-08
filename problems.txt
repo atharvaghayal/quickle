@@ -4,7 +4,7 @@ GPT points system for formula!!
 conect points system to game for each and every user
 total points = points scored by user.
 leaderboard points = points scored by user with respect to no of days for leaderboard!!
-add this is profile.html and leaderboard.html as well
+add this in profile.html and leaderboard.html as well
 leaderboard resets after month(exact monthend 30/31 date of month)
 winner user of mont should be displayed in between profile icon and leaderboard in format "👑 username 👑"
 

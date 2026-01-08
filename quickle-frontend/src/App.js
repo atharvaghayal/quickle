@@ -116,8 +116,31 @@ function App() {
     // Wordle doesn't use a scoring/timer system; keep state minimal
     const [isResetMode, setIsResetMode] = useState(false);
     
+    // Dynamic height to prevent keyboard overlap
+    const [appHeight, setAppHeight] = useState(() => {
+        const buffer = 350; // Increased buffer to prevent keyboard overlap
+        const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        return height - buffer;
+    });
+    
     // Logic Ref to prevent flickering re-opens
     const hasAutoShownStats = useRef(false);
+
+    // Update app height on resize to prevent keyboard overlap
+    useEffect(() => {
+        const updateHeight = () => {
+            const buffer = 350; // Increased buffer to prevent keyboard overlap
+            const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            setAppHeight(height - buffer);
+        };
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', updateHeight);
+            return () => window.visualViewport.removeEventListener('resize', updateHeight);
+        } else {
+            window.addEventListener('resize', updateHeight);
+            return () => window.removeEventListener('resize', updateHeight);
+        }
+    }, []);
 
     // Calculate keyboard letter statuses (Wordle style)
     const getKeyboardLetterStatuses = useCallback(() => {
@@ -280,7 +303,7 @@ function App() {
     }, [handleKeyPress, isAuthModalOpen, isResetMode]);
 
     return (
-        <div className={`App ${window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop'}`}>
+        <div className={`App ${window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop'}`} style={{ height: `${appHeight}px` }}>
             {isResetMode ? (
                 <ResetPassword />
             ) : (

@@ -47,7 +47,7 @@ body {
   position: static;
   /* CRITICAL: Ensure .App is transparent to show body background */
   background-color: transparent;
-  height: calc(100vh - 280px); /* Increased buffer for fixed keyboard to prevent overlap */
+  /* Height now set dynamically in JS to prevent keyboard overlap */
   box-sizing: border-box;
 }
 
@@ -55,7 +55,7 @@ body {
 @media (max-width: 480px) {
   .App {
     padding: 10px;
-    height: calc(100vh - 250px); /* Increased buffer for mobile to prevent keyboard overlap */
+    /* Height now set dynamically in JS */
   }
 }
 
@@ -680,18 +680,18 @@ body.light-theme .user-menu {
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    width: clamp(400px, 90vw, 500px); /* Increased width */
+    width: clamp(500px, 95vw, 650px); /* Increased width for larger keys */
     max-height: 200px; /* Prevent keyboard from exceeding height */
     background-color: var(--color-dark-bg);
     padding: 8px 4px;
     border-radius: 6px;
-    border: 2px solid var(--color-gray);
+    /* Removed outline/border */
     z-index: 1000;
 }
 
 body.light-theme .virtual-keyboard {
     background-color: var(--color-light-bg);
-    border-color: var(--color-gray);
+    /* Removed border */
 }
 
 .keyboard-row {
@@ -705,14 +705,14 @@ body.light-theme .virtual-keyboard {
     color: #000;
     border: none;
     border-radius: 4px;
-    padding: 12px 6px;
-    margin: 0 2px;
+    padding: 15px 8px;
+    margin: 0 3px;
     font-family: 'Courier New', Courier, monospace;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     font-weight: bold;
     cursor: pointer;
-    min-width: 28px;
-    height: 48px;
+    min-width: 35px;
+    height: 58px;
     transition: all 0.1s ease;
     text-transform: uppercase;
 }
@@ -918,7 +918,7 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
     }
 
     .virtual-keyboard {
-        max-width: calc(5 * var(--tile-size) + 4 * var(--board-gap));
+        max-width: 600px; /* Allow wider keyboard on tablets */
     }
 }
 
