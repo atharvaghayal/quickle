@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Quickle Profile</title>
     <link rel="icon" href="favicon.png" type="quickle-frontend\public\favicon.png" />
     <link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&display=swap" rel="stylesheet">
@@ -29,18 +29,20 @@
 
         .profile-container {
             background-color: var(--color-card-bg);
-            padding: 30px;
+            padding: clamp(15px, 4vw, 30px);
             max-width: 600px;
             width: 100%;
             position: relative;
             box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
-            border-radius: 10px;
+            border-radius: clamp(8px, 2vw, 10px);
             text-align: center;
+            box-sizing: border-box;
+            margin: clamp(10px, 2vh, 20px);
         }
 
         .profile-avatar {
-            width: 80px;
-            height: 80px;
+            width: clamp(60px, 15vw, 80px);
+            height: clamp(60px, 15vw, 80px);
             border-radius: 50%;
             background: var(--color-green);
             color: #000;
@@ -48,52 +50,58 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 2em;
-            margin: 0 auto 20px;
+            font-size: clamp(1.5rem, 5vw, 2em);
+            margin: 0 auto clamp(15px, 3vh, 20px);
             border: 2px solid var(--color-text-light);
         }
 
         .profile-username {
-            font-size: 1.5em;
-            margin-bottom: 30px;
+            font-size: clamp(1.2rem, 4vw, 1.5em);
+            margin-bottom: clamp(20px, 4vh, 30px);
             color: var(--color-yellow);
+            word-break: break-word;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: clamp(12px, 3vw, 20px);
+            margin-bottom: clamp(20px, 4vh, 30px);
         }
 
         .stat-item {
             background: #222;
-            padding: 15px;
-            border-radius: 5px;
+            padding: clamp(12px, 3vw, 15px);
+            border-radius: clamp(4px, 1vw, 5px);
             border: 1px solid var(--color-gray);
+            min-width: 0; /* Prevent grid overflow */
         }
 
         .stat-label {
-            font-size: 0.9em;
+            font-size: clamp(0.8rem, 2.5vw, 0.9em);
             color: #bbb;
-            margin-bottom: 5px;
+            margin-bottom: clamp(4px, 1vh, 5px);
         }
 
         .stat-value {
-            font-size: 1.5em;
+            font-size: clamp(1.2rem, 4vw, 1.5em);
             font-weight: bold;
             color: var(--color-green);
+            word-break: break-word;
         }
 
         .back-btn {
             background: var(--color-green);
             color: #000;
             border: none;
-            padding: 10px 20px;
-            font-size: 1em;
+            padding: clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 20px);
+            font-size: clamp(0.9rem, 2.5vw, 1em);
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: clamp(4px, 1vw, 5px);
             font-family: 'Courier New', monospace;
+            min-height: 44px; /* Touch target size */
+            width: clamp(120px, 30vw, 150px);
+            margin: 0 auto;
         }
 
         .back-btn:hover {
@@ -102,7 +110,64 @@
 
         .error {
             color: #ff6b6b;
-            margin-bottom: 20px;
+            margin-bottom: clamp(15px, 3vh, 20px);
+            font-size: clamp(0.85rem, 2.5vw, 1rem);
+            padding: clamp(8px, 2vw, 10px);
+        }
+
+        /* Responsive Design - Mobile */
+        @media (max-width: 480px) {
+            body {
+                padding: clamp(10px, 2vw, 15px);
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: clamp(10px, 2.5vw, 15px);
+            }
+        }
+
+        /* Tablet adjustments */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Landscape orientation adjustments */
+        @media (orientation: landscape) and (max-height: 600px) {
+            .profile-container {
+                max-height: 95vh;
+                overflow-y: auto;
+            }
+
+            .profile-avatar {
+                width: clamp(50px, 12vw, 70px);
+                height: clamp(50px, 12vw, 70px);
+                font-size: clamp(1.2rem, 4vw, 1.8em);
+            }
+
+            .stats-grid {
+                gap: clamp(8px, 2vw, 12px);
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .back-btn {
+                min-width: 44px;
+                min-height: 44px;
+            }
+        }
+
+        /* Safe area support for devices with notches */
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(10px, env(safe-area-inset-left));
+                padding-right: max(10px, env(safe-area-inset-right));
+                padding-top: max(10px, env(safe-area-inset-top));
+                padding-bottom: max(10px, env(safe-area-inset-bottom));
+            }
         }
     </style>
 </head>

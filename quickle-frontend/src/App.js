@@ -116,22 +116,62 @@ function App() {
     // Wordle doesn't use a scoring/timer system; keep state minimal
     const [isResetMode, setIsResetMode] = useState(false);
     
-    // Dynamic height to prevent keyboard overlap
+    // Universal dynamic height calculation for all screen sizes
     const [appHeight, setAppHeight] = useState(() => {
-        const buffer = 350; // Increased buffer to prevent keyboard overlap
-        const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-        return height - buffer;
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const viewportHeight = window.visualViewport ? window.visualViewport.height : height;
+        
+        // Calculate buffer based on screen size and aspect ratio
+        let buffer;
+        if (width < 480) {
+            buffer = Math.min(280, height * 0.35); // Small mobile devices
+        } else if (width < 768) {
+            buffer = Math.min(300, height * 0.38); // Large mobile / small tablets
+        } else if (width < 1024) {
+            buffer = Math.min(320, height * 0.40); // Tablets
+        } else if (width === 1366 && height === 768) {
+            buffer = 180; // Specific fix for 1366x768 laptops
+        } else if (width < 1440) {
+            buffer = Math.min(340, height * 0.42); // Small laptops
+        } else if (width < 1920) {
+            buffer = Math.min(350, height * 0.43); // Standard laptops
+        } else {
+            buffer = Math.min(360, height * 0.45); // Large desktops
+        }
+        
+        return Math.max(viewportHeight - buffer, 400); // Minimum height to prevent too small
     });
     
     // Logic Ref to prevent flickering re-opens
     const hasAutoShownStats = useRef(false);
 
-    // Update app height on resize to prevent keyboard overlap
+    // Update app height on resize - universal responsive calculation
     useEffect(() => {
         const updateHeight = () => {
-            const buffer = 350; // Increased buffer to prevent keyboard overlap
-            const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-            setAppHeight(height - buffer);
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const viewportHeight = window.visualViewport ? window.visualViewport.height : height;
+            
+            // Calculate buffer based on screen size and aspect ratio
+            let buffer;
+            if (width < 480) {
+                buffer = Math.min(280, height * 0.35); // Small mobile devices
+            } else if (width < 768) {
+                buffer = Math.min(300, height * 0.38); // Large mobile / small tablets
+            } else if (width < 1024) {
+                buffer = Math.min(320, height * 0.40); // Tablets
+            } else if (width === 1366 && height === 768) {
+                buffer = 180; // Specific fix for 1366x768 laptops
+            } else if (width < 1440) {
+                buffer = Math.min(340, height * 0.42); // Small laptops
+            } else if (width < 1920) {
+                buffer = Math.min(350, height * 0.43); // Standard laptops
+            } else {
+                buffer = Math.min(360, height * 0.45); // Large desktops
+            }
+            
+            setAppHeight(Math.max(viewportHeight - buffer, 400)); // Minimum height
         };
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', updateHeight);
@@ -310,7 +350,13 @@ function App() {
                 <>
                     <div className="help-icon" onClick={redirectToRules}>?</div>
                     {user ? <UserMenu /> : <button className="login-btn" onClick={openAuthModal}>Signup/Login</button>}
-                    {leaderboardData.length > 0 && window.innerWidth >= 481 && <Leaderboard data={leaderboardData} />}
+                    {leaderboardData.length > 0 && 
+                     ((window.innerWidth === 1366 && window.innerHeight === 768) ||
+                      (window.innerWidth === 1360 && window.innerHeight === 768) ||
+                      (window.innerWidth === 1920 && window.innerHeight === 1080) ||
+                      (window.innerWidth === 2560 && window.innerHeight === 1440) ||
+                      (window.innerWidth >= 3840)) && 
+                     <Leaderboard data={leaderboardData} />}
                     <header className="header"><BitTitle text="QUICKLE" /></header>
                     <div className="board">
                         {Array.from({ length: 6 }).map((_, i) => (

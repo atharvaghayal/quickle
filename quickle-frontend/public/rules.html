@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Quickle Rules card</title>
     <link rel="icon" href="favicon.png" type="quickle-frontend\public\favicon.png" />
     <link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&display=swap" rel="stylesheet">
@@ -44,7 +44,7 @@
         .rules-container {
             /* Styling for the card itself */
             background-color: var(--color-card-bg);
-            padding: 30px;
+            padding: clamp(15px, 4vw, 30px);
             max-width: 800px;
             width: 100%;
             position: relative;
@@ -54,6 +54,7 @@
             overflow-y: auto;
             -ms-overflow-style: none;
             scrollbar-width: none;
+            box-sizing: border-box;
 
             &::-webkit-scrollbar {
                 display: none;
@@ -65,16 +66,17 @@
             color: var(--color-yellow);
             font-family: 'Bitcount Prop Single', monospace;
             font-weight: 300;
-            font-size: 2.5em;
+            font-size: clamp(1.5rem, 5vw, 2.5em);
             text-align: center;
             margin-top: 0;
             text-shadow: 0 0 5px var(--color-yellow);
+            line-height: 1.2;
         }
 
         .subtitle {
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 1.1em;
+            margin-bottom: clamp(15px, 3vh, 30px);
+            font-size: clamp(0.9rem, 2.5vw, 1.1em);
             color: #ddd;
         }
         
@@ -82,26 +84,37 @@
             color: var(--color-green);
             border-bottom: 1px dashed var(--color-gray);
             padding-bottom: 5px;
-            margin-top: 25px;
-            font-size: 1.2em;
+            margin-top: clamp(15px, 3vh, 25px);
+            font-size: clamp(1rem, 3vw, 1.2em);
         }
 
         ul {
             list-style-type: '⚡ ';
-            padding-left: 20px;
+            padding-left: clamp(15px, 4vw, 20px);
+            font-size: clamp(0.85rem, 2.5vw, 1rem);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
-            font-size: 0.9em;
+            font-size: clamp(0.75rem, 2vw, 0.9em);
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        thead, tbody, tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
         }
 
         th, td {
             border: 1px solid var(--color-gray);
-            padding: 5px 8px;
+            padding: clamp(5px, 1.5vw, 8px);
             text-align: left;
+            word-wrap: break-word;
         }
 
         th {
@@ -110,10 +123,11 @@
         }
 
         .time-points {
-            padding: 10px;
+            padding: clamp(8px, 2vw, 10px);
             background: #0a0a0a;
             border: 1px solid #333;
-            margin-top: 15px;
+            margin-top: clamp(10px, 2vh, 15px);
+            font-size: clamp(0.85rem, 2.5vw, 1rem);
         }
         
         .penalty {
@@ -125,30 +139,100 @@
             /* This link now serves as the explicit close button */
             display: block;
             text-align: center;
-            margin-top: 30px;
-            font-size: 1.1em;
+            margin-top: clamp(20px, 3vh, 30px);
+            font-size: clamp(0.95rem, 2.5vw, 1.1em);
             color: var(--color-text-light);
             text-decoration: none;
             border: 1px solid var(--color-text-light);
-            padding: 8px 15px;
-            width: 150px;
+            padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 15px);
+            width: clamp(120px, 30vw, 150px);
             margin-left: auto;
             margin-right: auto;
+            min-height: 44px; /* Touch target size */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* Added Close Button Styling */
         .close-btn {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: clamp(8px, 2vw, 10px);
+            right: clamp(8px, 2vw, 10px);
             background: none;
             border: 2px solid var(--color-text-light);
             color: var(--color-text-light);
-            font-size: 1.2em;
+            font-size: clamp(1rem, 3vw, 1.2em);
             cursor: pointer;
-            padding: 2px 8px;
+            padding: clamp(4px, 1vw, 8px) clamp(6px, 1.5vw, 10px);
             line-height: 1;
             user-select: none;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Responsive Design - Mobile */
+        @media (max-width: 480px) {
+            .overlay {
+                padding: clamp(10px, 2vw, 15px);
+            }
+
+            .rules-container {
+                padding: clamp(12px, 3vw, 20px);
+            }
+
+            .section {
+                margin-bottom: clamp(15px, 3vh, 20px);
+            }
+
+            .section p {
+                font-size: clamp(0.85rem, 2.5vw, 1rem);
+                line-height: 1.5;
+            }
+        }
+
+        /* Tablet adjustments */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .rules-container {
+                padding: clamp(20px, 3vw, 25px);
+            }
+        }
+
+        /* Landscape orientation adjustments */
+        @media (orientation: landscape) and (max-height: 600px) {
+            .rules-container {
+                max-height: 90vh;
+            }
+
+            .rules-container h1 {
+                font-size: clamp(1.2rem, 4vw, 2rem);
+                margin-bottom: clamp(5px, 1vh, 10px);
+            }
+
+            .subtitle {
+                margin-bottom: clamp(10px, 2vh, 15px);
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .close-btn, .back-link {
+                min-width: 44px;
+                min-height: 44px;
+            }
+        }
+
+        /* Safe area support for devices with notches */
+        @supports (padding: max(0px)) {
+            .overlay {
+                padding-left: max(10px, env(safe-area-inset-left));
+                padding-right: max(10px, env(safe-area-inset-right));
+                padding-top: max(10px, env(safe-area-inset-top));
+                padding-bottom: max(10px, env(safe-area-inset-bottom));
+            }
         }
     </style>
 </head>

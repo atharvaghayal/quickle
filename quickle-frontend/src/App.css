@@ -37,25 +37,46 @@ body {
   height: 100vh; /* Changed from min-height to height for exact fit */
   font-family: 'Courier New', Courier, monospace;
   overflow-x: hidden; /* Prevent horizontal scrolling */
+  overflow-y: hidden; /* Prevent vertical scrolling */
+  position: fixed;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .App {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
-  position: static;
+  padding: clamp(10px, 2vw, clamp(15px, 2.5vw, 20px)); /* Universal responsive padding */
+  padding-top: clamp(55px, 10vh, clamp(70px, 13vh, 110px)); /* Universal responsive top padding for fixed title */
+  position: relative;
   /* CRITICAL: Ensure .App is transparent to show body background */
   background-color: transparent;
   /* Height now set dynamically in JS to prevent keyboard overlap */
   box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden; /* NO SCROLLBAR - all content must fit */
+  -webkit-overflow-scrolling: touch;
+  justify-content: flex-start; /* Start from top */
 }
 
 /* Reduce padding on very small screens */
 @media (max-width: 480px) {
   .App {
-    padding: 10px;
+    padding: clamp(8px, 1.5vw, 15px); /* Reduced padding to fit all rows */
+    padding-top: clamp(55px, 11vh, 85px); /* Space for fixed title on mobile */
+    padding-bottom: clamp(5px, 1vh, 10px);
     /* Height now set dynamically in JS */
+  }
+
+  .header {
+    top: clamp(8px, 1.5vh, 15px);
+  }
+
+  .board {
+    margin-top: clamp(45px, 9vh, 70px); /* Space below fixed title on mobile */
   }
 }
 
@@ -108,17 +129,24 @@ body.light-theme .help-icon {
 
 /* --- Header/Title Styling --- */
 .header {
-  margin-bottom: 20px; /* Reduced gap from board for better fit */
+  position: fixed;
+  top: clamp(6px, 1.2vh, clamp(10px, 2vh, 20px)); /* Universal responsive top */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
   text-align: center;
+  z-index: 100;
+  margin: 0;
+  padding: 0;
 }
 
 .title-bitcount {
   font-family: 'Bitcount Prop Single', monospace; 
   font-weight: 300; 
-  font-size: 4em;
-  letter-spacing: 0.05em; /* Tighter letter spacing */
+  font-size: clamp(1.5rem, min(4.5vw, min(6vh, 3.5rem)), 3.5rem); /* Universal responsive title */
+  letter-spacing: clamp(0.02em, 0.1vw, 0.05em); /* Responsive letter spacing */
   margin: 0;
-  line-height: 1;
+  line-height: clamp(1.05, 0.1vh, 1.1); /* Responsive line height */
   color: var(--color-text-primary);
   user-select: none;
 }
@@ -151,24 +179,36 @@ body.light-theme .help-icon {
 .board {
   display: flex;
   flex-direction: column;
-  gap: 8px; 
+  gap: clamp(2px, 0.8vw, clamp(3px, 0.6vh, 6px)); /* Universal responsive gap */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  justify-content: flex-start; /* Start from top */
+  margin-top: clamp(50px, 10vh, clamp(60px, 12vh, 100px)); /* Universal responsive top margin */
+  margin-bottom: clamp(8px, 1.5vh, clamp(12px, 2vh, 20px)); /* Universal responsive bottom margin */
 }
 
 .row {
   display: flex;
-  gap: 8px; 
+  gap: clamp(2px, 0.8vw, clamp(3px, 0.6vh, 6px)); /* Universal responsive gap */
+  justify-content: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 .tile {
-  width: 60px; 
-  height: 60px;
+  /* Universal responsive tile sizing - scales smoothly across all resolutions */
+  width: clamp(36px, min(10vw, min(12vh, calc((100vh - clamp(180px, 25vh, 250px)) / 7))), 60px); 
+  height: clamp(36px, min(10vw, min(12vh, calc((100vh - clamp(180px, 25vh, 250px)) / 7))), 60px);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 2.5em; 
+  font-size: clamp(1.3rem, min(4vw, min(5vh, calc((100vh - clamp(180px, 25vh, 250px)) / 9))), 2.5em); 
   font-weight: bold;
   text-transform: uppercase;
-  box-sizing: border-box; 
+  box-sizing: border-box;
+  flex-shrink: 0; /* Prevent tiles from shrinking */ 
   
   /* Tile Background blends with page background */
   background: var(--color-tile-bg); 
@@ -176,19 +216,19 @@ body.light-theme .help-icon {
   /* Default letter color (for typing/absent) */
   color: var(--color-tile-letter); 
   
-  /* Default border color (for empty/typing) */
-  border: 4px solid var(--color-empty-border); 
+  /* Default border color (for empty/typing) - responsive border */
+  border: clamp(2px, 0.5vw, 4px) solid var(--color-empty-border); 
 }
 
 /* STATUS-SPECIFIC STYLING */
 .tile.correct {
-  border: 4px solid var(--color-green);
+  border: clamp(2px, 0.8vw, 4px) solid var(--color-green);
   color: var(--color-green);
   background: var(--color-tile-bg); 
 }
 
 .tile.present {
-  border: 4px solid var(--color-yellow);
+  border: clamp(2px, 0.8vw, 4px) solid var(--color-yellow);
   color: var(--color-yellow);
   background: var(--color-tile-bg); 
 }
@@ -196,14 +236,14 @@ body.light-theme .help-icon {
 .tile.absent {
   color: var(--color-tile-letter); 
   /* Border turns gray in BOTH themes */
-  border: 4px solid var(--color-absent-border); 
+  border: clamp(2px, 0.8vw, 4px) solid var(--color-absent-border); 
   background: var(--color-tile-bg); 
 }
 
 /* Empty/Typing */
 .tile.empty, .tile.typing {
   color: var(--color-tile-letter);
-  border: 4px solid var(--color-empty-border); 
+  border: clamp(2px, 0.8vw, 4px) solid var(--color-empty-border); 
   background: var(--color-tile-bg); 
 }
 .tile.empty {
@@ -232,14 +272,16 @@ body.light-theme .help-icon {
     background-color: #1a1a1a;
     border: 2px solid var(--color-text-primary);
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-    padding: 25px;
+    padding: clamp(15px, 4vw, 25px);
     width: 90%;
-    max-width: 450px;
+    max-width: clamp(300px, 90vw, 450px);
     color: var(--color-text-primary);
     position: relative;
     box-sizing: border-box;
     font-family: 'Courier New', monospace;
     text-align: center;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 /* Light Theme Modal Override */
@@ -251,8 +293,8 @@ body.light-theme .stats-card {
 
 .stats-card h2 {
     color: var(--color-green);
-    font-size: 1.5em;
-    margin-bottom: 20px;
+    font-size: clamp(1.2rem, 4vw, 1.5em);
+    margin-bottom: clamp(15px, 3vh, 20px);
     text-shadow: 0 0 5px var(--color-green);
 }
 body.light-theme .stats-card h2 {
@@ -275,12 +317,14 @@ body.light-theme .stats-card h2 {
 
 /* Answer Reveal */
 .answer-reveal {
-    margin-bottom: 25px;
-    font-size: 1.1em;
+    margin-bottom: clamp(15px, 3vh, 25px);
+    font-size: clamp(0.95rem, 3vw, 1.1em);
     color: #f33;
+    word-break: break-word;
 }
+
 .actual-answer {
-    font-size: 1.2em;
+    font-size: clamp(1rem, 3.5vw, 1.2em);
     font-weight: bold;
     color: var(--color-yellow);
     text-transform: uppercase;
@@ -291,33 +335,42 @@ body.light-theme .stats-card h2 {
     display: flex;
     justify-content: space-around;
     align-items: flex-end;
-    margin: 20px 0;
-    padding: 15px 0;
+    margin: clamp(15px, 3vh, 20px) 0;
+    padding: clamp(10px, 2vh, 15px) 0;
     border-top: 1px solid var(--color-gray);
     border-bottom: 1px solid var(--color-gray);
+    flex-wrap: wrap;
+    gap: clamp(8px, 2vw, 12px);
 }
 
 .stat-item {
     text-align: center;
+    min-width: 60px;
+    flex: 1 1 auto;
 }
+
 .stat-label {
-    font-size: 0.9em;
+    font-size: clamp(0.75rem, 2.5vw, 0.9em);
     color: #bbb;
-    margin-bottom: 5px;
+    margin-bottom: clamp(3px, 1vh, 5px);
 }
+
 .stat-value {
-    font-size: 1.8em;
+    font-size: clamp(1.3rem, 4.5vw, 1.8em);
     font-weight: bold;
     color: var(--color-text-primary);
+    word-break: break-word;
 }
 
 /* Login Prompt */
 .login-prompt {
     font-style: italic;
     color: var(--color-yellow);
-    margin: 20px 0;
-    padding: 10px;
+    margin: clamp(15px, 3vh, 20px) 0;
+    padding: clamp(8px, 2vw, 10px);
     border: 1px dashed var(--color-gray);
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+    line-height: 1.5;
 }
 
 /* Countdown Section */
@@ -677,16 +730,19 @@ body.light-theme .user-menu {
 /* --- Virtual Keyboard Styles --- */
 .virtual-keyboard {
     position: fixed;
-    bottom: 20px;
+    bottom: clamp(6px, 1.2vh, clamp(10px, 1.8vh, 20px)); /* Universal responsive bottom */
     left: 50%;
     transform: translateX(-50%);
-    width: clamp(500px, 95vw, 650px); /* Increased width for larger keys */
-    max-height: 200px; /* Prevent keyboard from exceeding height */
+    width: clamp(280px, min(95vw, 650px), 650px); /* Universal responsive width */
+    max-width: calc(100vw - clamp(16px, 2vw, 24px)); /* Responsive overflow prevention */
+    max-height: clamp(120px, min(22vh, 200px), 200px); /* Universal responsive height */
     background-color: var(--color-dark-bg);
-    padding: 8px 4px;
-    border-radius: 6px;
+    padding: clamp(3px, 0.8vw, clamp(5px, 1vh, 8px)) clamp(2px, 0.4vw, clamp(3px, 0.6vw, 4px)); /* Universal responsive padding */
+    border-radius: clamp(3px, 0.8vw, clamp(5px, 1vh, 6px)); /* Universal responsive border radius */
     /* Removed outline/border */
     z-index: 1000;
+    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 body.light-theme .virtual-keyboard {
@@ -697,22 +753,22 @@ body.light-theme .virtual-keyboard {
 .keyboard-row {
     display: flex;
     justify-content: center;
-    margin-bottom: 6px;
+    margin-bottom: clamp(3px, 0.6vh, clamp(4px, 0.8vh, 6px)); /* Universal responsive margin */
 }
 
 .key-btn {
     background-color: #d3d6da;
     color: #000;
     border: none;
-    border-radius: 4px;
-    padding: 15px 8px;
-    margin: 0 3px;
+    border-radius: clamp(3px, 0.6vw, 4px); /* Universal responsive border radius */
+    padding: clamp(10px, 2vh, clamp(12px, 2.5vh, 15px)) clamp(6px, 1.2vw, clamp(7px, 1.5vw, 8px)); /* Universal responsive padding */
+    margin: 0 clamp(2px, 0.4vw, clamp(2.5px, 0.5vw, 3px)); /* Universal responsive margin */
     font-family: 'Courier New', Courier, monospace;
-    font-size: 1.1rem;
+    font-size: clamp(0.85rem, min(2.2vw, min(2.8vh, 1.1rem)), 1.1rem); /* Universal responsive font */
     font-weight: bold;
     cursor: pointer;
-    min-width: 35px;
-    height: 58px;
+    min-width: clamp(28px, min(6vw, 35px), 35px); /* Universal responsive min width */
+    height: clamp(42px, min(8vh, clamp(48px, 9vh, 58px)), 58px); /* Universal responsive height */
     transition: all 0.1s ease;
     text-transform: uppercase;
 }
@@ -743,30 +799,32 @@ body.light-theme .virtual-keyboard {
 
 .key-wide {
     flex: 1.5;
-    max-width: 65px;
-    font-size: 0.8rem;
+    max-width: clamp(50px, min(10vw, 65px), 65px); /* Universal responsive max width */
+    font-size: clamp(0.7rem, min(1.8vw, min(2.2vh, 0.8rem)), 0.8rem); /* Universal responsive font */
 }
 
-/* Always add space for keyboard */
-.App {
-    /* Removed padding-bottom since keyboard is now positioned relative to board */
-}
+/* Keyboard positioning is handled by fixed positioning, no extra padding needed */
 
 /* Mobile adjustments - smaller on mobile */
 @media (max-width: 768px) {
+    .virtual-keyboard {
+        width: clamp(280px, 95vw, 600px);
+        padding: clamp(3px, 0.8vw, 6px) clamp(1px, 0.3vw, 3px);
+    }
+
     .key-btn {
-        height: 42px;
-        padding: 10px 4px;
-        font-size: 0.8rem;
-        min-width: 24px;
+        height: clamp(38px, 8vh, 42px);
+        padding: clamp(8px, 1.5vw, 10px) clamp(3px, 0.8vw, 4px);
+        font-size: clamp(0.7rem, 2.5vw, 0.8rem);
+        min-width: clamp(22px, 5vw, 24px);
     }
     
     .key-wide {
-        max-width: 55px;
-        font-size: 0.7rem;
-    /* Removed padding-bottom since keyboard is now relative */
+        max-width: clamp(50px, 12vw, 55px);
+        font-size: clamp(0.65rem, 2vw, 0.7rem);
+    }
 }
-}
+
 
 @keyframes shake {
   0% { transform: translateX(0); }
@@ -829,7 +887,7 @@ body.light-theme .virtual-keyboard {
     padding: clamp(10px, 2vw, 15px);
     font-family: 'Courier New', monospace;
     z-index: 900;
-    display: flex;
+    display: none; /* Hidden by default, shown only on desktop */
     flex-direction: column;
     box-sizing: border-box;
 }
@@ -906,19 +964,44 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
    COMPREHENSIVE RESPONSIVE DESIGN
    ========================================== */
 
-/* Tablet Styles (768px - 1024px) */
-@media (min-width: 768px) and (max-width: 1024px) {
+/* Tablet Styles (768px - 1023px) - Hide leaderboard on tablets including iPad mini */
+@media (min-width: 768px) and (max-width: 1023px) {
     .App {
         max-width: 600px;
+        padding: clamp(10px, 2vw, 15px);
     }
 
+    /* Hide leaderboard on tablets */
     .leaderboard-container {
-        width: clamp(220px, 22vw, 260px);
-        top: 55%;
+        display: none !important;
+    }
+
+    .header {
+        top: clamp(10px, 2vh, 15px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(2.5rem, 6vw, 3.5rem);
+    }
+
+    .board {
+        margin-top: clamp(60px, 12vh, 95px);
+        margin-bottom: clamp(8px, 1.5vh, 12px);
+    }
+
+    .App {
+        padding-top: clamp(70px, 13vh, 105px);
     }
 
     .virtual-keyboard {
-        max-width: 600px; /* Allow wider keyboard on tablets */
+        max-width: 600px;
+        bottom: clamp(8px, 1.5vh, 15px);
+    }
+
+    .tile {
+        width: clamp(50px, 11vw, 58px);
+        height: clamp(50px, 11vw, 58px);
+        font-size: clamp(2rem, 5vw, 2.3rem);
     }
 }
 
@@ -926,51 +1009,122 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
 @media (min-width: 481px) and (max-width: 767px) {
     .App {
         max-width: 480px;
-        padding: clamp(8px, 1.5vw, 15px);
+        padding: clamp(6px, 1.2vw, 12px);
+        padding-top: clamp(8px, 1.5vh, 12px);
     }
 
     .header {
-        margin-bottom: clamp(10px, 3vh, 20px);
+        top: clamp(8px, 1.5vh, 12px);
     }
 
     .board {
-        margin-bottom: clamp(5px, 1vh, 10px);
+        margin-top: clamp(50px, 10vh, 75px);
     }
 
-    .leaderboard-container {
-        width: clamp(200px, 35vw, 240px);
-        top: 60%;
-        right: clamp(8px, 1.5vw, 15px);
-        padding: clamp(8px, 1.5vw, 12px);
-    }
-
-    .virtual-keyboard {
-        padding: clamp(4px, 1vw, 6px) clamp(2px, 0.5vw, 3px);
-    }
-}
-
-/* Small Mobile (320px - 480px) */
-@media (max-width: 480px) {
     .App {
-        max-width: 100%;
-        padding: clamp(5px, 1vw, 10px);
-    }
-
-    .header {
-        margin-bottom: clamp(10px, 2vh, 15px);
+        padding-top: clamp(60px, 11vh, 85px);
     }
 
     .title-bitcount {
-        font-size: clamp(2rem, 7vw, 2.8rem);
+        font-size: clamp(2rem, 5.5vw, 2.8rem);
     }
 
     .board {
-        margin-bottom: clamp(8px, 1.5vh, 15px);
+        margin-bottom: clamp(5px, 1vh, 8px);
+        gap: clamp(3px, 0.8vw, 5px);
+    }
+
+    .row {
+        gap: clamp(3px, 0.8vw, 5px);
+    }
+
+    .tile {
+        width: clamp(42px, 10.5vw, 54px);
+        height: clamp(42px, 10.5vw, 54px);
+        font-size: clamp(1.6rem, 4.5vw, 2.1rem);
+    }
+
+    /* Hide leaderboard on mobile landscape */
+    .leaderboard-container {
+        display: none !important;
+    }
+
+    .virtual-keyboard {
+        width: clamp(420px, 95vw, 480px);
+        bottom: clamp(6px, 1vh, 10px);
+        padding: clamp(3px, 0.8vw, 5px) clamp(1px, 0.3vw, 3px);
+    }
+}
+
+/* iPhone SE and Small Mobile (320px - 480px) */
+@media (max-width: 480px) {
+    .App {
+        max-width: 100%;
+        padding: clamp(4px, 1vw, 8px);
+        justify-content: flex-start;
+        padding-top: clamp(5px, 1.5vh, 10px);
+    }
+
+    .header {
+        top: clamp(5px, 1.5vh, 10px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(1.5rem, 5.5vw, 2.5rem);
+        line-height: 1.1;
+    }
+
+    .board {
+        margin-top: clamp(45px, 9vh, 70px);
+        margin-bottom: clamp(3px, 0.8vh, 6px);
+        gap: clamp(2px, 0.8vw, 4px);
+    }
+
+    .row {
+        gap: clamp(2px, 0.8vw, 4px);
+    }
+
+    .tile {
+        /* Calculate to fit all 6 rows: (viewport height - header - keyboard - padding) / 6 */
+        width: clamp(36px, min(10vw, calc((100vh - 180px) / 7)), 50px);
+        height: clamp(36px, min(10vw, calc((100vh - 180px) / 7)), 50px);
+        font-size: clamp(1.3rem, min(4vw, calc((100vh - 180px) / 9)), 1.9rem);
+        border-width: clamp(2px, 0.6vw, 3px);
+    }
+
+    .row {
+        gap: clamp(2px, 0.8vw, 4px);
+    }
+
+    .header {
+        margin-bottom: clamp(3px, 1vh, 8px);
     }
 
     /* Hide leaderboard on very small screens to save space */
     .leaderboard-container {
-        display: none;
+        display: none !important;
+    }
+
+    .virtual-keyboard {
+        bottom: clamp(5px, 1vh, 10px);
+        width: clamp(280px, 98vw, 480px);
+    }
+
+    .help-icon, .login-btn, .user-profile-icon {
+        top: clamp(5px, 1.5vw, 10px);
+        width: clamp(26px, 6.5vw, 30px);
+        height: clamp(26px, 6.5vw, 30px);
+        font-size: clamp(1.1em, 3.5vw, 1.4em);
+    }
+
+    .help-icon {
+        left: clamp(5px, 1.5vw, 10px);
+    }
+
+    .login-btn, .user-profile-icon {
+        right: clamp(5px, 1.5vw, 10px);
+        font-size: clamp(0.75rem, 2.2vw, 0.85em);
+        padding: clamp(5px, 1.2vw, 7px) clamp(8px, 2vw, 10px);
     }
 
     .virtual-keyboard {
@@ -981,15 +1135,266 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
         margin-bottom: clamp(2px, 0.5vw, 4px);
     }
 
-    /* Position icons at corners on mobile */
-    .help-icon {
-        top: clamp(8px, 1.5vw, 12px);
-        left: clamp(8px, 1.5vw, 12px);
+    /* Ensure board doesn't overflow on very small screens */
+    .board {
+        max-width: calc(100vw - 20px);
+        overflow-x: hidden;
+    }
+}
+
+/* Surface Duo (540x720) - Portrait */
+@media (min-width: 540px) and (max-width: 540px) and (min-height: 720px) and (max-height: 720px) {
+    .App {
+        max-width: 520px;
+        padding: clamp(8px, 1.5vw, 12px);
     }
 
-    .login-btn, .user-profile-icon {
-        right: clamp(8px, 1.5vw, 12px);
-        top: clamp(8px, 1.5vw, 12px);
+    .leaderboard-container {
+        display: none !important;
+    }
+
+    .header {
+        top: clamp(8px, 1.5vh, 12px);
+    }
+
+    .board {
+        margin-top: clamp(50px, 10vh, 80px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(2rem, 5.5vw, 2.8rem);
+    }
+
+    .board {
+        margin-bottom: clamp(6px, 1.2vh, 10px);
+    }
+
+    .tile {
+        width: clamp(45px, 10.5vw, 55px);
+        height: clamp(45px, 10.5vw, 55px);
+        font-size: clamp(1.8rem, 4.8vw, 2.2rem);
+    }
+
+    .virtual-keyboard {
+        width: clamp(480px, 92vw, 520px);
+        bottom: clamp(8px, 1.2vh, 12px);
+    }
+}
+
+/* Nest Hub (1024x600) - Landscape */
+@media (min-width: 1024px) and (max-width: 1024px) and (min-height: 600px) and (max-height: 600px) {
+    .App {
+        max-width: 600px;
+        padding: clamp(10px, 1.5vw, 15px);
+    }
+
+    .leaderboard-container {
+        display: none !important;
+    }
+
+    .header {
+        top: clamp(8px, 1.5vh, 12px);
+    }
+
+    .board {
+        margin-top: clamp(50px, 10vh, 80px);
+        margin-bottom: clamp(6px, 1.2vh, 10px);
+        gap: clamp(4px, 0.8vw, 6px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(2.5rem, 5vw, 3rem);
+    }
+
+    .App {
+        padding-top: clamp(60px, 11vh, 90px);
+    }
+
+    .row {
+        gap: clamp(4px, 0.8vw, 6px);
+    }
+
+    .tile {
+        width: clamp(52px, 10vw, 58px);
+        height: clamp(52px, 10vw, 58px);
+        font-size: clamp(2rem, 4.5vw, 2.3rem);
+    }
+
+    .virtual-keyboard {
+        width: clamp(550px, 90vw, 600px);
+        bottom: clamp(8px, 1.5vh, 12px);
+    }
+}
+
+/* Nest Hub Max (1280x800) - Landscape */
+@media (min-width: 1280px) and (max-width: 1280px) and (min-height: 800px) and (max-height: 800px) {
+    .App {
+        max-width: 650px;
+        padding: clamp(12px, 1.5vw, 18px);
+    }
+
+    .leaderboard-container {
+        display: none !important;
+    }
+
+    .header {
+        top: clamp(10px, 1.8vh, 15px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(3rem, 5.5vw, 3.5rem);
+    }
+
+    .board {
+        margin-top: clamp(65px, 13vh, 100px);
+        margin-bottom: clamp(8px, 1.5vh, 12px);
+    }
+
+    .App {
+        padding-top: clamp(75px, 14vh, 105px);
+    }
+
+    .tile {
+        width: clamp(55px, 10.5vw, 60px);
+        height: clamp(55px, 10.5vw, 60px);
+        font-size: clamp(2.2rem, 4.8vw, 2.5rem);
+    }
+
+    .virtual-keyboard {
+        width: clamp(600px, 90vw, 650px);
+        bottom: clamp(10px, 1.8vh, 15px);
+    }
+}
+
+/* Laptop (1366x768) - Most common laptop resolution */
+@media (min-width: 1366px) and (max-width: 1366px) and (min-height: 768px) and (max-height: 768px) {
+    .App {
+        max-width: 600px;
+        padding: clamp(6px, 1vw, 10px) !important;
+        padding-top: clamp(45px, 8vh, 70px) !important; /* Minimal top padding */
+        padding-bottom: 0 !important;
+        height: calc(100vh - 180px) !important; /* Force specific height to prevent overlap */
+    }
+
+    .leaderboard-container {
+        width: clamp(260px, 19vw, 280px);
+        right: clamp(15px, 1.5vw, 20px);
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .header {
+        top: clamp(5px, 1vh, 8px) !important; /* Minimal top position */
+    }
+
+    .title-bitcount {
+        font-size: clamp(1.8rem, 3.5vw, 2.4rem) !important; /* Even smaller title */
+        line-height: 1.05 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .board {
+        margin-top: clamp(35px, 7vh, 60px) !important; /* Minimal top margin */
+        margin-bottom: clamp(50px, 7.5vh, 65px) !important; /* Very large bottom margin - ensure space above keyboard */
+        gap: clamp(1px, 0.3vw, 2px) !important; /* Minimal gap between rows */
+        max-height: calc(100vh - 320px) !important; /* Limit board height */
+    }
+
+    .row {
+        gap: clamp(1px, 0.3vw, 2px) !important; /* Minimal gap between tiles */
+    }
+
+    .tile {
+        width: clamp(38px, 7.5vw, 44px) !important; /* Even smaller tiles */
+        height: clamp(38px, 7.5vw, 44px) !important;
+        font-size: clamp(1.4rem, 3vw, 1.7rem) !important; /* Smaller font */
+        border-width: clamp(2px, 0.25vw, 2.5px) !important; /* Thinner borders */
+    }
+
+    .virtual-keyboard {
+        width: clamp(580px, 88vw, 620px) !important;
+        bottom: clamp(4px, 1vh, 8px) !important; /* Very close to bottom */
+        max-height: clamp(110px, 16vh, 140px) !important; /* Even smaller keyboard */
+        padding: clamp(1px, 0.3vw, 2px) clamp(1px, 0.15vw, 1.5px) !important; /* Minimal padding */
+    }
+
+    .key-btn {
+        height: clamp(28px, 5.5vh, 34px) !important; /* Even smaller keys */
+        padding: clamp(4px, 0.6vw, 6px) clamp(1px, 0.3vw, 2px) !important;
+        font-size: clamp(0.7rem, 1.4vw, 0.8rem) !important;
+        min-width: clamp(16px, 3vw, 20px) !important;
+        margin: 0 clamp(0.5px, 0.15vw, 1.5px) !important;
+    }
+
+    .key-wide {
+        max-width: clamp(40px, 8vw, 45px) !important;
+        font-size: clamp(0.6rem, 1.2vw, 0.7rem) !important;
+    }
+
+    .keyboard-row {
+        margin-bottom: clamp(0.5px, 0.2vw, 1.5px) !important; /* Minimal row spacing */
+    }
+}
+
+/* Leaderboard ONLY on specific resolutions - Hidden by default */
+/* 1366x768 */
+@media (min-width: 1366px) and (max-width: 1366px) and (min-height: 768px) and (max-height: 768px) {
+    .leaderboard-container {
+        display: flex !important;
+    }
+}
+
+/* 1360x768 */
+@media (min-width: 1360px) and (max-width: 1360px) and (min-height: 768px) and (max-height: 768px) {
+    .leaderboard-container {
+        display: flex !important;
+    }
+}
+
+/* 1920x1080 - All screen sizes (13.3", 14", 15.6") */
+@media (min-width: 1920px) and (max-width: 1920px) and (min-height: 1080px) and (max-height: 1080px) {
+    .App {
+        max-width: 600px;
+    }
+
+    .leaderboard-container {
+        display: flex !important;
+        width: clamp(280px, 18vw, 320px);
+        right: clamp(20px, 2vw, 30px);
+    }
+}
+
+/* 2560x1440 */
+@media (min-width: 2560px) and (max-width: 2560px) and (min-height: 1440px) and (max-height: 1440px) {
+    .App {
+        max-width: 650px;
+    }
+
+    .leaderboard-container {
+        display: flex !important;
+        width: clamp(300px, 15vw, 350px);
+        right: clamp(25px, 2.5vw, 35px);
+    }
+}
+
+/* 3840x2160 and above */
+@media (min-width: 3840px) {
+    .App {
+        max-width: 700px;
+    }
+
+    .leaderboard-container {
+        display: flex !important;
+        width: clamp(320px, 12vw, 380px);
+        right: clamp(30px, 3vw, 40px);
+    }
+}
+
+/* Ensure leaderboard is hidden on all other screen sizes */
+@media (max-width: 1359px), (min-width: 1361px) and (max-width: 1919px), (min-width: 1921px) and (max-width: 2559px), (min-width: 2561px) and (max-width: 3839px) {
+    .leaderboard-container {
+        display: none !important;
     }
 }
 
@@ -1019,16 +1424,50 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
 /* Portrait orientation adjustments */
 @media (orientation: portrait) and (max-height: 600px) {
     /* Short portrait screens (like some phones in landscape) */
-    .header {
-        margin-bottom: clamp(10px, 2vh, 20px);
+    .App {
+        padding: clamp(4px, 1vw, 8px);
+        padding-top: clamp(5px, 1.2vh, 8px);
     }
 
-    .title-bitcount {
-        font-size: clamp(1.8rem, 5vw, 2.5rem);
+    .header {
+        top: clamp(5px, 1.2vh, 12px);
     }
 
     .board {
-        margin-bottom: clamp(5px, 1vh, 10px);
+        margin-top: clamp(40px, 8vh, 65px);
+    }
+
+    .App {
+        padding-top: clamp(50px, 9vh, 75px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(1.5rem, 4.5vw, 2.2rem);
+        line-height: 1.1;
+    }
+
+    .board {
+        margin-bottom: clamp(4px, 0.8vh, 8px);
+        gap: clamp(2px, 0.6vw, 4px);
+    }
+
+    .row {
+        gap: clamp(2px, 0.6vw, 4px);
+    }
+
+    .tile {
+        width: clamp(36px, 9.5vw, 48px);
+        height: clamp(36px, 9.5vw, 48px);
+        font-size: clamp(1.3rem, 3.8vw, 1.9rem);
+    }
+
+    .virtual-keyboard {
+        bottom: clamp(4px, 0.8vh, 8px);
+        max-height: clamp(120px, 20vh, 160px);
+    }
+
+    .leaderboard-container {
+        display: none !important;
     }
 }
 
@@ -1049,13 +1488,24 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
     .help-icon, .user-profile-icon {
         width: clamp(40px, 8vw, 50px);
         height: clamp(40px, 8vw, 50px);
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .login-btn {
+        min-height: 44px;
+        min-width: 80px;
     }
 }
 
 /* High DPI displays */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
     /* Ensure crisp borders on high-DPI screens */
-    .tile, .key-btn, .modal-overlay > * {
+    .tile {
+        border-width: clamp(2px, 0.6vw, 4px);
+    }
+    
+    .key-btn, .modal-overlay > * {
         border-width: clamp(1px, 0.3vw, 2px);
     }
 }
@@ -1130,5 +1580,189 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
     body {
         background: white !important;
         color: black !important;
+    }
+}
+
+/* ==========================================
+   UNIVERSAL RESPONSIVE SYSTEM
+   Comprehensive coverage for all screen resolutions
+   ========================================== */
+
+/* Extra Small Devices (320px - 375px) - Small phones */
+@media (min-width: 320px) and (max-width: 375px) {
+    .tile {
+        width: clamp(36px, 9.5vw, 40px) !important;
+        height: clamp(36px, 9.5vw, 40px) !important;
+        font-size: clamp(1.3rem, 3.5vw, 1.6rem) !important;
+    }
+    
+    .title-bitcount {
+        font-size: clamp(1.5rem, 4vw, 2rem) !important;
+    }
+    
+    .virtual-keyboard {
+        width: clamp(280px, 92vw, 360px) !important;
+        max-height: clamp(110px, 20vh, 140px) !important;
+    }
+}
+
+/* Small Devices (376px - 480px) - Standard phones */
+@media (min-width: 376px) and (max-width: 480px) {
+    .tile {
+        width: clamp(38px, 10vw, 45px) !important;
+        height: clamp(38px, 10vw, 45px) !important;
+        font-size: clamp(1.4rem, 3.8vw, 1.8rem) !important;
+    }
+}
+
+/* Medium Devices (481px - 767px) - Large phones / Small tablets */
+@media (min-width: 481px) and (max-width: 767px) {
+    .tile {
+        width: clamp(42px, 10.5vw, 50px) !important;
+        height: clamp(42px, 10.5vw, 50px) !important;
+        font-size: clamp(1.6rem, 4.2vw, 2rem) !important;
+    }
+    
+    .board {
+        margin-bottom: clamp(12px, 2.5vh, 18px) !important;
+    }
+}
+
+/* Tablets (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .tile {
+        width: clamp(48px, 11vw, 56px) !important;
+        height: clamp(48px, 11vw, 56px) !important;
+        font-size: clamp(1.9rem, 4.5vw, 2.2rem) !important;
+    }
+    
+    .board {
+        margin-bottom: clamp(15px, 3vh, 22px) !important;
+    }
+    
+    .virtual-keyboard {
+        max-height: clamp(150px, 24vh, 180px) !important;
+    }
+}
+
+/* Small Laptops (1024px - 1279px) */
+@media (min-width: 1024px) and (max-width: 1279px) {
+    .tile {
+        width: clamp(50px, 11.5vw, 58px) !important;
+        height: clamp(50px, 11.5vw, 58px) !important;
+        font-size: clamp(2rem, 4.8vw, 2.3rem) !important;
+    }
+}
+
+/* Standard Laptops (1280px - 1439px) */
+@media (min-width: 1280px) and (max-width: 1439px) {
+    .tile {
+        width: clamp(52px, 12vw, 60px) !important;
+        height: clamp(52px, 12vw, 60px) !important;
+        font-size: clamp(2.1rem, 5vw, 2.4rem) !important;
+    }
+}
+
+/* Large Laptops (1440px - 1919px) */
+@media (min-width: 1440px) and (max-width: 1919px) {
+    .tile {
+        width: clamp(54px, 12.5vw, 60px) !important;
+        height: clamp(54px, 12.5vw, 60px) !important;
+        font-size: clamp(2.2rem, 5.2vw, 2.5rem) !important;
+    }
+}
+
+/* Full HD Desktops (1920px - 2559px) */
+@media (min-width: 1920px) and (max-width: 2559px) {
+    .tile {
+        width: clamp(56px, 13vw, 60px) !important;
+        height: clamp(56px, 13vw, 60px) !important;
+        font-size: clamp(2.3rem, 5.5vw, 2.5rem) !important;
+    }
+    
+    .board {
+        margin-bottom: clamp(18px, 3.5vh, 25px) !important;
+    }
+}
+
+/* 2K / QHD Displays (2560px - 3839px) */
+@media (min-width: 2560px) and (max-width: 3839px) {
+    .tile {
+        width: clamp(58px, 13.5vw, 60px) !important;
+        height: clamp(58px, 13.5vw, 60px) !important;
+        font-size: clamp(2.4rem, 5.8vw, 2.5rem) !important;
+    }
+    
+    .virtual-keyboard {
+        max-height: clamp(180px, 26vh, 200px) !important;
+    }
+}
+
+/* 4K / UHD Displays (3840px+) */
+@media (min-width: 3840px) {
+    .tile {
+        width: 60px !important;
+        height: 60px !important;
+        font-size: 2.5rem !important;
+    }
+    
+    .board {
+        margin-bottom: clamp(20px, 4vh, 30px) !important;
+    }
+    
+    .virtual-keyboard {
+        max-height: 200px !important;
+    }
+}
+
+/* Aspect Ratio Adjustments */
+/* Wide screens (16:9, 21:9, etc.) */
+@media (min-aspect-ratio: 16/9) {
+    .board {
+        margin-bottom: clamp(10px, 2vh, clamp(15px, 3vh, 25px)) !important;
+    }
+}
+
+/* Tall screens (portrait tablets, phones) */
+@media (max-aspect-ratio: 3/4) {
+    .tile {
+        width: clamp(36px, min(9vw, 9vh), 50px) !important;
+        height: clamp(36px, min(9vw, 9vh), 50px) !important;
+    }
+    
+    .board {
+        margin-bottom: clamp(15px, 3vh, 25px) !important;
+    }
+}
+
+/* Very short screens (landscape phones) */
+@media (max-height: 500px) {
+    .tile {
+        width: clamp(32px, 8vw, 40px) !important;
+        height: clamp(32px, 8vw, 40px) !important;
+        font-size: clamp(1.2rem, 3vw, 1.5rem) !important;
+    }
+    
+    .title-bitcount {
+        font-size: clamp(1.2rem, 3.5vw, 1.8rem) !important;
+    }
+    
+    .virtual-keyboard {
+        max-height: clamp(100px, 18vh, 130px) !important;
+    }
+    
+    .board {
+        margin-bottom: clamp(20px, 4vh, 30px) !important;
+    }
+}
+
+/* Very tall screens (ultra-wide monitors) */
+@media (min-height: 1200px) {
+    .board {
+        margin-bottom: clamp(25px, 4vh, 35px) !important;
+    }
+    
+    .virtual-keyboard {
+        max-height: clamp(180px, 25vh, 200px) !important;
     }
 }
