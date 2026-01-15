@@ -8,7 +8,7 @@ GPT points system for formula!!
 GPT streak functionaing and take prompt
 -----------------------------------------------------------------
 USING GEMINI :
-conect points system to game for each and every user
+connect points system to game for each and every user
 total points = points scored by user.
 leaderboard points = points scored by user with respect to no of days for leaderboard!!
 add this in profile.html and leaderboard.html as well
