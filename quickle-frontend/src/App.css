@@ -1110,12 +1110,20 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
         width: clamp(280px, 98vw, 480px);
     }
 
-    .help-icon, .login-btn, .user-profile-icon {
-        top: clamp(5px, 1.5vw, 10px);
-        width: clamp(26px, 6.5vw, 30px);
-        height: clamp(26px, 6.5vw, 30px);
-        font-size: clamp(1.1em, 3.5vw, 1.4em);
-    }
+   .help-icon, .login-btn, .user-profile-icon {
+    position: fixed;
+    top: 20px;
+    /* Use a consistent size for circles */
+    width: 40px; 
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 1100;
+}
 
     .help-icon {
         left: clamp(5px, 1.5vw, 10px);
@@ -1766,3 +1774,6 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
         max-height: clamp(180px, 25vh, 200px) !important;
     }
 }
+
+.help-icon { left: 20px; font-size: 1.5rem; }
+.login-btn, .user-profile-icon { right: 20px; border-radius: 20px; width: auto; padding: 0 15px; }

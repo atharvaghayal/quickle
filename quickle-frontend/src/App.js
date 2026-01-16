@@ -10,11 +10,6 @@ import ResetPassword from './ResetPassword';
 const API_BASE_URL = 'http://localhost:8000/api';
 axios.defaults.withCredentials = true;
 
-// --- Helper Functions ---
-const redirectToRules = () => {
-    window.location.href = '/rules.html';
-};
-
 // --- Sub-Components ---
 const Leaderboard = ({ data }) => (
     <div className="leaderboard-container">
@@ -98,7 +93,6 @@ const Toast = ({ message, onClose }) => {
 
 // --- Main App ---
 function App() {
-    // FIXED: Removed unused 'loading' and 'isAuthModalOpen' to resolve ESLint warnings
     const { user, openAuthModal, isAuthModalOpen } = useAuth();
     
     const [guesses, setGuesses] = useState([]);
@@ -113,110 +107,22 @@ function App() {
     const [leaderboardData, setLeaderboardData] = useState([]);
     const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
     const [statsData, setStatsData] = useState(null);
-    // Wordle doesn't use a scoring/timer system; keep state minimal
     const [isResetMode, setIsResetMode] = useState(false);
+    const [showRules, setShowRules] = useState(false);
     
-    // Universal dynamic height calculation for all screen sizes
-    const [appHeight, setAppHeight] = useState(() => {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        const viewportHeight = window.visualViewport ? window.visualViewport.height : height;
-        
-        // Calculate buffer based on screen size and aspect ratio
-        let buffer;
-        if (width < 480) {
-            buffer = Math.min(280, height * 0.35); // Small mobile devices
-        } else if (width < 768) {
-            buffer = Math.min(300, height * 0.38); // Large mobile / small tablets
-        } else if (width < 1024) {
-            buffer = Math.min(320, height * 0.40); // Tablets
-        } else if (width === 1366 && height === 768) {
-            buffer = 180; // Specific fix for 1366x768 laptops
-        } else if (width < 1440) {
-            buffer = Math.min(340, height * 0.42); // Small laptops
-        } else if (width < 1920) {
-            buffer = Math.min(350, height * 0.43); // Standard laptops
-        } else {
-            buffer = Math.min(360, height * 0.45); // Large desktops
-        }
-        
-        return Math.max(viewportHeight - buffer, 400); // Minimum height to prevent too small
-    });
+    // Timer for the 6th guess points logic
+    const [timerStart, setTimerStart] = useState(null);
+
+    // Universal dynamic height calculation
+    const [appHeight, setAppHeight] = useState(() => window.innerHeight);
     
-    // Logic Ref to prevent flickering re-opens
     const hasAutoShownStats = useRef(false);
 
-    // Update app height on resize - universal responsive calculation
     useEffect(() => {
-        const updateHeight = () => {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            const viewportHeight = window.visualViewport ? window.visualViewport.height : height;
-            
-            // Calculate buffer based on screen size and aspect ratio
-            let buffer;
-            if (width < 480) {
-                buffer = Math.min(280, height * 0.35); // Small mobile devices
-            } else if (width < 768) {
-                buffer = Math.min(300, height * 0.38); // Large mobile / small tablets
-            } else if (width < 1024) {
-                buffer = Math.min(320, height * 0.40); // Tablets
-            } else if (width === 1366 && height === 768) {
-                buffer = 180; // Specific fix for 1366x768 laptops
-            } else if (width < 1440) {
-                buffer = Math.min(340, height * 0.42); // Small laptops
-            } else if (width < 1920) {
-                buffer = Math.min(350, height * 0.43); // Standard laptops
-            } else {
-                buffer = Math.min(360, height * 0.45); // Large desktops
-            }
-            
-            setAppHeight(Math.max(viewportHeight - buffer, 400)); // Minimum height
-        };
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', updateHeight);
-            return () => window.visualViewport.removeEventListener('resize', updateHeight);
-        } else {
-            window.addEventListener('resize', updateHeight);
-            return () => window.removeEventListener('resize', updateHeight);
-        }
+        const updateHeight = () => setAppHeight(window.innerHeight);
+        window.addEventListener('resize', updateHeight);
+        return () => window.removeEventListener('resize', updateHeight);
     }, []);
-
-    // Calculate keyboard letter statuses (Wordle style)
-    const getKeyboardLetterStatuses = useCallback(() => {
-        const letterStatuses = {};
-        
-        // Process all completed guesses
-        guesses.forEach((guess, guessIndex) => {
-            const statusArray = solvedStatuses[guessIndex];
-            if (!statusArray) return;
-            
-            guess.split('').forEach((letter, letterIndex) => {
-                const status = statusArray[letterIndex];
-                const upperLetter = letter.toUpperCase();
-                
-                // Priority: correct > present > absent
-                if (!letterStatuses[upperLetter] || 
-                    (letterStatuses[upperLetter] === 'absent' && status === 'present') ||
-                    (letterStatuses[upperLetter] !== 'correct' && status === 'correct')) {
-                    letterStatuses[upperLetter] = status;
-                }
-            });
-        });
-        
-        return letterStatuses;
-    }, [guesses, solvedStatuses]);
-
-    // FIXED: Lock gameId for the session to prevent synchronization bugs
-    const [gameId] = useState(() => {
-        const saved = localStorage.getItem('quickle_game_state');
-        const today = new Date().toISOString().slice(0, 10);
-        if (saved) {
-            const data = JSON.parse(saved);
-            if (data.date === today) return data.gameId || Date.now().toString();
-        }
-        return Date.now().toString();
-    });
 
     const fetchLeaderboard = useCallback(async () => {
         try {
@@ -228,24 +134,14 @@ function App() {
     const fetchSystemWord = useCallback(async (id) => {
         try {
             const res = await axios.get(`${API_BASE_URL}/wordle/daily-word?gameId=${id}`);
-            const word = (res.data && res.data.word) ? String(res.data.word).toUpperCase() : "";
+            const word = res.data?.word?.toUpperCase() || "";
             setSystemWord(word);
             return word;
         } catch (e) { return ""; }
     }, []);
 
-    const saveGameState = useCallback((data) => {
-        const today = new Date().toISOString().slice(0, 10);
-        localStorage.setItem('quickle_game_state', JSON.stringify({
-            guesses: data.guesses || guesses,
-            solvedStatuses: data.solvedStatuses || solvedStatuses,
-            gameState: data.gameState || gameState,
-            // score removed to follow Wordle rules; keep for backward-compat
-            score: data.score || 0,
-            systemWord: data.systemWord || systemWord,
-            gameId, date: today
-        }));
-    }, [guesses, solvedStatuses, gameState, systemWord, gameId]);
+    // Get the Monthly Champion
+    const monthlyChampion = leaderboardData.length > 0 ? leaderboardData[0].username : null;
 
     const showStatistics = useCallback(async (win) => {
         try {
@@ -256,6 +152,18 @@ function App() {
         }
         setIsStatsModalOpen(true);
     }, []);
+
+    const saveGameState = useCallback((data) => {
+        const today = new Date().toISOString().slice(0, 10);
+        localStorage.setItem('quickle_game_state', JSON.stringify({
+            guesses: data.guesses || guesses,
+            solvedStatuses: data.solvedStatuses || solvedStatuses,
+            gameState: data.gameState || gameState,
+            systemWord: data.systemWord || systemWord,
+            gameId: data.gameId || Date.now().toString(),
+            date: today
+        }));
+    }, [guesses, solvedStatuses, gameState, systemWord]);
 
     const loadGameState = useCallback(async () => {
         const today = new Date().toISOString().slice(0, 10);
@@ -275,57 +183,83 @@ function App() {
                 return;
             }
         }
-        const word = await fetchSystemWord(gameId);
-        saveGameState({ systemWord: word });
-    }, [gameId, fetchSystemWord, saveGameState, showStatistics]);
+        const id = Date.now().toString();
+        const word = await fetchSystemWord(id);
+        saveGameState({ systemWord: word, gameId: id });
+    }, [fetchSystemWord, saveGameState, showStatistics]);
 
     useEffect(() => {
         loadGameState();
         fetchLeaderboard();
-    }, []); // Empty deps to stop loops
+    }, [loadGameState, fetchLeaderboard]);
 
+    // Handle timer for the 6th guess
     useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('token')) {
-            setIsResetMode(true);
+        if (guesses.length === 5 && !timerStart && gameState === 'playing') {
+            setTimerStart(Date.now());
         }
-    }, []);
-
-    const resetGame = useCallback(() => {
-        window.location.reload(); 
-    }, []);
+    }, [guesses, timerStart, gameState]);
 
     const submitGuess = useCallback(async () => {
         if (isLocked || isSubmitting) return;
         setIsSubmitting(true);
         try {
-            const res = await axios.post(`${API_BASE_URL}/wordle/guess`, { guess: currentGuess, gameId });
+            const res = await axios.post(`${API_BASE_URL}/wordle/guess`, { 
+                guess: currentGuess, 
+                gameId: JSON.parse(localStorage.getItem('quickle_game_state')).gameId 
+            });
+
             if (res.data.error) {
-                // Use backend error message when available
-                setToastMessage(res.data.error || "Not in word list.");
+                setToastMessage(res.data.error);
                 setShakeRow(guesses.length);
                 setTimeout(() => setShakeRow(null), 500);
                 return;
             }
+
             const { status_array, is_correct } = res.data;
             const newG = [...guesses, currentGuess];
             const newS = [...solvedStatuses, status_array];
-            setGuesses(newG); setSolvedStatuses(newS); setCurrentGuess('');
-            if (is_correct) {
-                setGameState('won');
-                saveGameState({ guesses: newG, solvedStatuses: newS, gameState: 'won', score: 0, systemWord });
-                showStatistics(true);
-                if (user) await axios.post(`${API_BASE_URL}/user/update-stats`, { won: true, points: 0, word: systemWord });
-            } else if (newG.length === 6) {
-                setGameState('lost');
-                saveGameState({ guesses: newG, solvedStatuses: newS, gameState: 'lost', score: 0, systemWord });
-                showStatistics(false);
-                if (user) await axios.post(`${API_BASE_URL}/user/update-stats`, { won: false, points: 0, word: systemWord });
+            
+            setGuesses(newG); 
+            setSolvedStatuses(newS); 
+            setCurrentGuess('');
+
+            if (is_correct || newG.length === 6) {
+                const finalState = is_correct ? 'won' : 'lost';
+                setGameState(finalState);
+                setIsLocked(true);
+
+                // Calculate points based on timing if it was the 6th guess
+                let points = is_correct ? 50 : 0;
+                if (is_correct && newG.length === 6 && timerStart) {
+                    const seconds = (Date.now() - timerStart) / 1000;
+                    if (seconds <= 10) points = 150;
+                    else if (seconds <= 15) points = 100;
+                    else if (seconds <= 30) points = 75;
+                } else if (is_correct) {
+                    // Standard points for guesses 1-5
+                    points = (7 - newG.length) * 20;
+                }
+
+                saveGameState({ guesses: newG, solvedStatuses: newS, gameState: finalState, systemWord });
+                showStatistics(is_correct);
+
+                if (user) {
+                    await axios.post(`${API_BASE_URL}/user/update-stats`, { 
+                        won: is_correct, 
+                        points: points, 
+                        word: systemWord 
+                    });
+                    fetchLeaderboard();
+                }
             }
-            fetchLeaderboard();
-        } catch (e) { setShakeRow(guesses.length); setTimeout(() => setShakeRow(null), 500); }
-        finally { setIsSubmitting(false); }
-    }, [currentGuess, guesses, solvedStatuses, gameId, systemWord, user, isLocked, isSubmitting, saveGameState, showStatistics, fetchLeaderboard]);
+        } catch (e) {
+            setShakeRow(guesses.length);
+            setTimeout(() => setShakeRow(null), 500);
+        } finally {
+            setIsSubmitting(false);
+        }
+    }, [currentGuess, guesses, solvedStatuses, systemWord, user, isLocked, isSubmitting, timerStart, saveGameState, showStatistics, fetchLeaderboard]);
 
     const handleKeyPress = useCallback((key) => {
         if (gameState !== 'playing' || isStatsModalOpen || isLocked || isSubmitting) return;
@@ -335,39 +269,79 @@ function App() {
     }, [currentGuess, gameState, isStatsModalOpen, isLocked, isSubmitting, submitGuess]);
 
     useEffect(() => {
-        if (isAuthModalOpen || isResetMode) return; // Don't listen to keys when auth modal or reset is open
-
+        if (isAuthModalOpen || isResetMode) return;
         const h = (e) => handleKeyPress(e.key);
         document.addEventListener('keydown', h);
         return () => document.removeEventListener('keydown', h);
     }, [handleKeyPress, isAuthModalOpen, isResetMode]);
 
+    const getKeyboardLetterStatuses = () => {
+        const statuses = {};
+        guesses.forEach((guess, i) => {
+            guess.split('').forEach((char, j) => {
+                const s = solvedStatuses[i][j];
+                if (s === 'correct') statuses[char] = 'correct';
+                else if (s === 'present' && statuses[char] !== 'correct') statuses[char] = 'present';
+                else if (s === 'absent' && !statuses[char]) statuses[char] = 'absent';
+            });
+        });
+        return statuses;
+    };
+
     return (
-        <div className={`App ${window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop'}`} style={{ height: `${appHeight}px` }}>
-            {isResetMode ? (
-                <ResetPassword />
-            ) : (
+        <div className="App" style={{ height: `${appHeight}px` }}>
+            {isResetMode ? <ResetPassword /> : (
                 <>
-                    <div className="help-icon" onClick={redirectToRules}>?</div>
-                    {user ? <UserMenu /> : <button className="login-btn" onClick={openAuthModal}>Signup/Login</button>}
-                    {leaderboardData.length > 0 && 
-                     ((window.innerWidth === 1366 && window.innerHeight === 768) ||
-                      (window.innerWidth === 1360 && window.innerHeight === 768) ||
-                      (window.innerWidth === 1920 && window.innerHeight === 1080) ||
-                      (window.innerWidth === 2560 && window.innerHeight === 1440) ||
-                      (window.innerWidth >= 3840)) && 
-                     <Leaderboard data={leaderboardData} />}
+                    <div className="help-icon" onClick={() => setShowRules(true)}>?</div>
+                    
+                    <div className="top-right-nav">
+                        {monthlyChampion && (
+                            <div className="champion-banner">👑 {monthlyChampion} 👑</div>
+                        )}
+                        {user ? <UserMenu /> : <button className="login-btn" onClick={openAuthModal}>Login</button>}
+                    </div>
+
+                    <Leaderboard data={leaderboardData} />
+
                     <header className="header"><BitTitle text="QUICKLE" /></header>
+                    
                     <div className="board">
                         {Array.from({ length: 6 }).map((_, i) => (
-                            <Row key={i} guess={i === guesses.length ? currentGuess : (guesses[i] || "")} solutionStatus={solvedStatuses[i]} isShaking={shakeRow === i} />
+                            <Row 
+                                key={i} 
+                                guess={i === guesses.length ? currentGuess : (guesses[i] || "")} 
+                                solutionStatus={solvedStatuses[i]} 
+                                isShaking={shakeRow === i} 
+                            />
                         ))}
                     </div>
+
                     <VirtualKeyboard onKeyPress={handleKeyPress} letterStatuses={getKeyboardLetterStatuses()} />
+                    
                     <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+                    
                     {isStatsModalOpen && statsData && (
-                        <StatsModal stats={statsData} onClose={() => setIsStatsModalOpen(false)} answerWord={systemWord} isWin={gameState === 'won'} onPlayAgain={resetGame} />
+                        <StatsModal 
+                            stats={statsData} 
+                            onClose={() => setIsStatsModalOpen(false)} 
+                            answerWord={systemWord} 
+                            isWin={gameState === 'won'} 
+                            onPlayAgain={() => window.location.reload()} 
+                        />
                     )}
+
+                    {showRules && (
+                        <div className="modal-overlay" onClick={() => setShowRules(false)}>
+                            <div className="stats-card" onClick={e => e.stopPropagation()}>
+                                <h2>How To Play</h2>
+                                <p>Guess the word in 6 tries.</p>
+                                <p>Each guess must be a valid 5-letter word.</p>
+                                <p>Speed on the 6th guess grants bonus points!</p>
+                                <button className="primary-btn" onClick={() => setShowRules(false)}>Got it</button>
+                            </div>
+                        </div>
+                    )}
+
                     <AuthModal />
                 </>
             )}
