@@ -1,11 +1,27 @@
 // src/StatsModal.js
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
-const StatsModal = ({ stats, onClose, resetTime, formatTime, answerWord, isWin, onPlayAgain }) => {
+const StatsModal = ({ stats, onClose, answerWord, isWin, onPlayAgain }) => {
+    const [countdown, setCountdown] = useState(30);
     
-    // This Hook is now structurally guaranteed to be the first hook call, 
-    // eliminating the conditional error when imported into App.js.
+    // Countdown timer
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCountdown(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    if (onPlayAgain) onPlayAgain();
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        
+        return () => clearInterval(timer);
+    }, [onPlayAgain]);
+    
+    // Close on Escape key
     useEffect(() => { 
         const handleEsc = (event) => {
             if (event.key === 'Escape') onClose();
@@ -14,28 +30,24 @@ const StatsModal = ({ stats, onClose, resetTime, formatTime, answerWord, isWin, 
         return () => document.removeEventListener('keydown', handleEsc);
     }, [onClose]);
 
-    const isLoggedIn = stats.is_logged_in;
-
-    // --- ANONYMOUS FIRST-TIME STATS LOGIC ---
-    if (!isLoggedIn) {
-        stats.times_played = 1;
-        stats.streak = isWin ? 1 : 0;
-        stats.max_streak = isWin ? 1 : 0;
-        stats.win_percentage = isWin ? 100.00 : 0.00;
-    }
-
-    const streakDisplay = stats.currentStreakOngoing ? `${stats.streak}*` : stats.streak.toString();
-    const maxStreakDisplay = stats.max_streak.toString();
+    const isLoggedIn = stats?.is_logged_in || false;
+    
+    // Safely handle stats display
+    const times_played = stats?.times_played || 1;
+    const streak = stats?.streak || 0;
+    const max_streak = stats?.max_streak || 0;
+    const win_percentage = stats?.win_percentage || (isWin ? 100 : 0);
+    const total_points = stats?.total_points || 0;
+    const current_points = stats?.current_points || 0;
 
     const headerText = isWin ? '🥳 CONGRATULATIONS! 🥳' : 'GAME OVER';
-    const headerClass = isWin ? 'win-header' : 'loss-header';
 
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="stats-card" onClick={(e) => e.stopPropagation()}>
-                <button className="close-btn" onClick={onClose}>X</button>
+                <button className="close-btn" onClick={onClose}>✕</button>
                 
-                <h2 className={headerClass}>{headerText}</h2>
+                <h2>{headerText}</h2>
                 
                 {!isWin && (
                     <div className="answer-reveal">
@@ -43,38 +55,50 @@ const StatsModal = ({ stats, onClose, resetTime, formatTime, answerWord, isWin, 
                     </div>
                 )}
 
+                {isWin && current_points > 0 && (
+                    <div className="answer-reveal" style={{ background: 'rgba(0, 255, 0, 0.15)', borderColor: '#00ff00' }}>
+                        Points Earned: <span className="actual-answer" style={{ color: '#00ff00' }}>+{current_points}</span>
+                    </div>
+                )}
+
                 <div className="stats-row">
                     <div className="stat-item">
                         <div className="stat-label">Played</div>
-                        <div className="stat-value">{stats.times_played}</div>
+                        <div className="stat-value">{times_played}</div>
                     </div>
                     <div className="stat-item">
                         <div className="stat-label">Streak</div>
-                        <div className="stat-value">{streakDisplay}</div>
+                        <div className="stat-value">{streak}</div>
                     </div>
                     <div className="stat-item">
-                        <div className="stat-label">Max Streak</div>
-                        <div className="stat-value">{maxStreakDisplay}</div>
+                        <div className="stat-label">Max</div>
+                        <div className="stat-value">{max_streak}</div>
                     </div>
                     <div className="stat-item">
                         <div className="stat-label">Win %</div>
-                        <div className="stat-value">{stats.win_percentage.toFixed(2)}%</div>
-                    </div>
-                    <div className="stat-item">
-                        <div className="stat-label">Total Points</div>
-                        <div className="stat-value">{stats.total_points}</div>
+                        <div className="stat-value">{win_percentage.toFixed(1)}%</div>
                     </div>
                 </div>
 
                 {!isLoggedIn && (
                     <p className="login-prompt">
-                        “Sign-up OR Login if you want to save your scores and appear at the top of the leaderboard.”
+                        📝 Login to save your stats and compete on the leaderboard!
                     </p>
                 )}
-                <div className="footer-credit">
-                    Quickle-Word Game | Built with ❤️ by <a href="https://chess.com">Atharva Ghayal</a>
+
+                <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                    <button className="primary-btn" onClick={onPlayAgain}>Play Again</button>
+                    <button className="secondary-btn" onClick={onClose}>Close</button>
                 </div>
 
+                <div className="countdown-section">
+                    <div style={{ fontSize: '0.85rem', color: '#aaa' }}>Auto-restart in:</div>
+                    <div className="countdown-timer">{countdown}s</div>
+                </div>
+
+                <div className="footer-credit" style={{ marginTop: '15px', fontSize: '0.75rem', color: '#666', textAlign: 'center' }}>
+                    Quickle • Built with ❤️ by Atharva Ghayal
+                </div>
             </div>
         </div>
     );

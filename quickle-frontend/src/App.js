@@ -10,17 +10,29 @@ import ResetPassword from './ResetPassword';
 const API_BASE_URL = 'http://localhost:8000/api';
 axios.defaults.withCredentials = true;
 
+// Ensure mobile viewport is properly set
+if (!document.querySelector('meta[name="viewport"]')) {
+    const viewport = document.createElement('meta');
+    viewport.name = 'viewport';
+    viewport.content = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover';
+    document.head.appendChild(viewport);
+}
+
 // --- Sub-Components ---
 
 const BitTitle = ({ text }) => (
-    <h1 className="title-bitcount">
+    <h1 className="title-bitcount" role="banner">
         {text.split('').map((char, i) => (
             char === ' ' ? <span key={i} className="word-separator">&nbsp;</span> : <span key={i} className="bit-char">{char}</span>
         ))}
     </h1>
 );
 
-const Tile = ({ letter, status }) => <div className={`tile ${status || 'empty'}`}>{letter}</div>;
+const Tile = ({ letter, status }) => (
+    <div className={`tile ${status || 'empty'}`} role="presentation">
+        {letter}
+    </div>
+);
 
 const Row = ({ guess, solutionStatus, isShaking }) => {
     const tiles = Array.from({ length: 5 }, (_, i) => ({
@@ -28,7 +40,7 @@ const Row = ({ guess, solutionStatus, isShaking }) => {
         status: solutionStatus ? solutionStatus[i] : (guess[i] ? 'typing' : 'empty')
     }));
     return (
-        <div className={`row ${isShaking ? 'row-shake' : ''}`}>
+        <div className={`row ${isShaking ? 'row-shake' : ''}`} role="presentation">
             {tiles.map((tile, i) => <Tile key={i} letter={tile.letter} status={tile.status} />)}
         </div>
     );
@@ -41,7 +53,7 @@ const Toast = ({ message, onClose }) => {
             return () => clearTimeout(t);
         }
     }, [message, onClose]);
-    return message ? <div className="toast toast-error">{message}</div> : null;
+    return message ? <div className="toast toast-error" role="alert">{message}</div> : null;
 };
 
 // --- Main App ---
@@ -96,12 +108,23 @@ function App() {
         } catch (e) { return ""; }
     }, []);
 
-    const showStatistics = useCallback(async (win) => {
+    const showStatistics = useCallback(async (win, points = 0) => {
         try {
             const res = await axios.get(`${API_BASE_URL}/user/stats`);
-            setStatsData(res.data);
+            setStatsData({ 
+                ...res.data,
+                current_points: points 
+            });
         } catch (e) {
-            setStatsData({ times_played: 1, streak: win ? 1 : 0, max_streak: 1, win_percentage: win ? 100 : 0, total_points: 0, is_logged_in: false });
+            setStatsData({ 
+                times_played: 1, 
+                streak: win ? 1 : 0, 
+                max_streak: 1, 
+                win_percentage: win ? 100 : 0, 
+                total_points: points, 
+                is_logged_in: false,
+                current_points: points 
+            });
         }
         setIsStatsModalOpen(true);
     }, []);
@@ -153,18 +176,20 @@ function App() {
     }, [guesses, timerStart, gameState]);
 
     const submitGuess = useCallback(async () => {
-        if (isLocked || isSubmitting) return;
+        if (isLocked || isSubmitting || currentGuess.length !== 5) return;
         setIsSubmitting(true);
         try {
+            const gameState = JSON.parse(localStorage.getItem('quickle_game_state'));
             const res = await axios.post(`${API_BASE_URL}/wordle/guess`, { 
                 guess: currentGuess, 
-                gameId: JSON.parse(localStorage.getItem('quickle_game_state')).gameId 
+                gameId: gameState?.gameId || Date.now().toString()
             });
 
             if (res.data.error) {
                 setToastMessage(res.data.error);
                 setShakeRow(guesses.length);
                 setTimeout(() => setShakeRow(null), 500);
+                setIsSubmitting(false);
                 return;
             }
 
@@ -189,12 +214,14 @@ function App() {
                     else if (seconds <= 15) points = 100;
                     else if (seconds <= 30) points = 75;
                 } else if (is_correct) {
-                    // Standard points for guesses 1-5
-                    points = (7 - newG.length) * 20;
+                    // Standard points for guesses 1-5: More points for faster wins
+                    points = Math.max(20, (7 - newG.length) * 25);
                 }
 
                 saveGameState({ guesses: newG, solvedStatuses: newS, gameState: finalState, systemWord });
-                showStatistics(is_correct);
+                
+                // Show stats after a short delay
+                setTimeout(() => showStatistics(is_correct, points), 500);
 
                 if (user) {
                     await axios.post(`${API_BASE_URL}/user/update-stats`, { 
@@ -205,6 +232,7 @@ function App() {
                 }
             }
         } catch (e) {
+            console.error('Error submitting guess:', e);
             setShakeRow(guesses.length);
             setTimeout(() => setShakeRow(null), 500);
         } finally {
