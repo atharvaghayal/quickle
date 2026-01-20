@@ -1,6 +1,4 @@
-get GEMINI help for perfect UI|UX.
-make signup/Login working on click.
-------------------------------------------
+backend logic.
 change 6th guess timings to 10 sec, 15 sec, 30 sec and more than 30 sec.
 GPT points system for formula!!
 GPT streak functionaing and take prompt
@@ -20,7 +18,4 @@ USING yt+GPT :
 DEPLOYMENT..
 -----------------------------------------------------------------------------------------------
 USING GEMINI :
-fix UI|UX again if any after deployment
-
 add missing 5 letter words taking from users!!
-add something something!!
