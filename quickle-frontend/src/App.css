@@ -52,14 +52,16 @@ body {
   position: relative;
   /* CRITICAL: Ensure .App is transparent to show body background */
   background-color: transparent;
-  /* Height now set dynamically in JS to prevent keyboard overlap */
+  /* Height set to auto for proper layout */
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
-  overflow-y: hidden; /* NO SCROLLBAR - all content must fit */
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   justify-content: flex-start; /* Start from top */
+  min-height: 100vh;
+  padding-bottom: clamp(30px, 5vh, 50px);
 }
 
 /* Reduce padding on very small screens */
@@ -67,8 +69,8 @@ body {
   .App {
     padding: clamp(8px, 1.5vw, 15px); /* Reduced padding to fit all rows */
     padding-top: clamp(55px, 11vh, 85px); /* Space for fixed title on mobile */
-    padding-bottom: clamp(5px, 1vh, 10px);
-    /* Height now set dynamically in JS */
+    padding-bottom: clamp(30px, 5vh, 50px);
+    /* Height now set to auto */
   }
 
   .header {
@@ -84,15 +86,26 @@ body {
     position: fixed;
     top: 20px;
     left: 20px;
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: 2px solid white;
-    font-size: 1.5em;
+    font-size: 1.6em;
     font-weight: bold;
-    line-height: 28px;
-    text-align: center;
     text-shadow: 0 0 5px var(--color-icon-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    text-decoration: none;
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.help-icon:hover {
+    box-shadow: 0 0 15px var(--color-icon-border);
+    transform: scale(1.05);
 }
 
 /* --- Login/Signup Button (Now positioned at top right) --- */
@@ -102,30 +115,51 @@ body {
     right: 20px;
     padding: 8px 12px;
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid white;
+    border: 2px solid white;
     color: white;
     font-size: 0.9em;
     font-family: 'Courier New', monospace;
     text-transform: uppercase;
     border-radius: 4px;
-    
-    /* Ensure the button is sized normally */
-    width: auto; 
-    height: auto; 
-    line-height: normal; /* Override icon specific line-height */
-
     text-shadow: 0 0 5px var(--color-icon-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    min-height: 30px;
+    transition: all 0.2s ease;
+}
+
+.login-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
 }
 
 /* --- LIGHT THEME ICON OVERRIDE: Remove Shadow --- */
 body.light-theme .help-icon {
     text-shadow: none;
+    border-color: black;
 }
 
 body.light-theme .help-icon {
     border-color: black;
 }
 
+/* --- Top Right Navigation --- */
+.top-right-nav {
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    z-index: 1150;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+    max-width: 400px;
+    justify-content: flex-end;
+}
 
 /* --- Header/Title Styling --- */
 .header {
@@ -179,14 +213,15 @@ body.light-theme .help-icon {
 .board {
   display: flex;
   flex-direction: column;
-  gap: clamp(2px, 0.8vw, clamp(3px, 0.6vh, 6px)); /* Universal responsive gap */
+  gap: clamp(3px, 0.8vw, clamp(4px, 0.8vh, 8px)); /* Universal responsive gap */
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
   flex-shrink: 0;
   justify-content: flex-start; /* Start from top */
-  margin-top: clamp(50px, 10vh, clamp(60px, 12vh, 100px)); /* Universal responsive top margin */
-  margin-bottom: clamp(8px, 1.5vh, clamp(12px, 2vh, 20px)); /* Universal responsive bottom margin */
+  margin-top: clamp(60px, 11vh, clamp(75px, 13vh, 110px)); /* Universal responsive top margin */
+  margin-bottom: clamp(12px, 2vh, clamp(15px, 2.5vh, 25px)); /* Universal responsive bottom margin */
+  padding: 0 clamp(5px, 1vw, 10px); /* Add horizontal padding for small screens */
 }
 
 .row {
@@ -643,14 +678,16 @@ body.light-theme .reset-password input {
 /* --- USER MENU --- */
 .user-menu-wrapper {
     position: fixed;
-    right: 20px;
+    right: clamp(8px, 2vw, 20px);
     top: 20px;
     z-index: 1200;
 }
 
 .user-avatar {
-    width: 36px;
-    height: 36px;
+    width: clamp(36px, 8vw, 44px);
+    height: clamp(36px, 8vw, 44px);
+    min-width: 44px;
+    min-height: 44px;
     border-radius: 50%;
     background: var(--color-green);
     color: #000;
@@ -660,6 +697,13 @@ body.light-theme .reset-password input {
     font-weight: bold;
     cursor: pointer;
     border: 2px solid var(--color-icon-border);
+    transition: all 0.2s ease;
+    font-size: clamp(0.8rem, 2vw, 1rem);
+}
+
+.user-avatar:hover {
+    box-shadow: 0 0 12px var(--color-green);
+    transform: scale(1.1);
 }
 
 .user-menu {
@@ -667,11 +711,12 @@ body.light-theme .reset-password input {
     right: 0;
     margin-top: 8px;
     background: #111;
-    border: 1px solid var(--color-icon-border);
+    border: 2px solid var(--color-icon-border);
     min-width: 200px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.45);
     border-radius: 8px;
     overflow: hidden;
+    z-index: 1300;
 }
 
 body.light-theme .user-menu {
@@ -704,10 +749,12 @@ body.light-theme .user-menu {
 
 .user-profile-icon {
     position: fixed;
-    right: 20px;
+    right: clamp(8px, 2vw, 20px);
     top: 20px;
-    width: var(--icon-size);
-    height: var(--icon-size);
+    width: clamp(40px, 8vw, 50px);
+    height: clamp(40px, 8vw, 50px);
+    min-width: 44px;
+    min-height: 44px;
     background-color: var(--color-green); /* Your #00ff00 green */
     color: #000; /* Black letter for contrast on green */
     border-radius: 50%;
@@ -727,102 +774,14 @@ body.light-theme .user-menu {
     box-shadow: 0 0 10px var(--color-green);
 }
 
-/* --- Virtual Keyboard Styles --- */
-.virtual-keyboard {
-    position: fixed;
-    bottom: clamp(6px, 1.2vh, clamp(10px, 1.8vh, 20px)); /* Universal responsive bottom */
-    left: 50%;
-    transform: translateX(-50%);
-    width: clamp(280px, min(95vw, 650px), 650px); /* Universal responsive width */
-    max-width: calc(100vw - clamp(16px, 2vw, 24px)); /* Responsive overflow prevention */
-    max-height: clamp(120px, min(22vh, 200px), 200px); /* Universal responsive height */
-    background-color: var(--color-dark-bg);
-    padding: clamp(3px, 0.8vw, clamp(5px, 1vh, 8px)) clamp(2px, 0.4vw, clamp(3px, 0.6vw, 4px)); /* Universal responsive padding */
-    border-radius: clamp(3px, 0.8vw, clamp(5px, 1vh, 6px)); /* Universal responsive border radius */
-    /* Removed outline/border */
-    z-index: 1000;
-    box-sizing: border-box;
-    flex-shrink: 0;
-}
-
-body.light-theme .virtual-keyboard {
-    background-color: var(--color-light-bg);
-    /* Removed border */
-}
-
-.keyboard-row {
-    display: flex;
-    justify-content: center;
-    margin-bottom: clamp(3px, 0.6vh, clamp(4px, 0.8vh, 6px)); /* Universal responsive margin */
-}
-
-.key-btn {
-    background-color: #d3d6da;
-    color: #000;
-    border: none;
-    border-radius: clamp(3px, 0.6vw, 4px); /* Universal responsive border radius */
-    padding: clamp(10px, 2vh, clamp(12px, 2.5vh, 15px)) clamp(6px, 1.2vw, clamp(7px, 1.5vw, 8px)); /* Universal responsive padding */
-    margin: 0 clamp(2px, 0.4vw, clamp(2.5px, 0.5vw, 3px)); /* Universal responsive margin */
-    font-family: 'Courier New', Courier, monospace;
-    font-size: clamp(0.85rem, min(2.2vw, min(2.8vh, 1.1rem)), 1.1rem); /* Universal responsive font */
-    font-weight: bold;
-    cursor: pointer;
-    min-width: clamp(28px, min(6vw, 35px), 35px); /* Universal responsive min width */
-    height: clamp(42px, min(8vh, clamp(48px, 9vh, 58px)), 58px); /* Universal responsive height */
-    transition: all 0.1s ease;
-    text-transform: uppercase;
-}
-
-.key-btn:hover {
-    background-color: #c5c8cc;
-}
-
-.key-btn:active {
-    transform: scale(0.95);
-}
-
-/* Wordle-style keyboard key statuses */
-.key-btn.correct {
-    background-color: #6aaa64;
-    color: #fff;
-}
-
-.key-btn.present {
-    background-color: #c9b458;
-    color: #fff;
-}
-
-.key-btn.absent {
-    background-color: #787c7e;
-    color: #fff;
-}
-
-.key-wide {
-    flex: 1.5;
-    max-width: clamp(50px, min(10vw, 65px), 65px); /* Universal responsive max width */
-    font-size: clamp(0.7rem, min(1.8vw, min(2.2vh, 0.8rem)), 0.8rem); /* Universal responsive font */
-}
-
-/* Keyboard positioning is handled by fixed positioning, no extra padding needed */
-
-/* Mobile adjustments - smaller on mobile */
-@media (max-width: 768px) {
-    .virtual-keyboard {
-        width: clamp(280px, 95vw, 600px);
-        padding: clamp(3px, 0.8vw, 6px) clamp(1px, 0.3vw, 3px);
-    }
-
-    .key-btn {
-        height: clamp(38px, 8vh, 42px);
-        padding: clamp(8px, 1.5vw, 10px) clamp(3px, 0.8vw, 4px);
-        font-size: clamp(0.7rem, 2.5vw, 0.8rem);
-        min-width: clamp(22px, 5vw, 24px);
-    }
-    
-    .key-wide {
-        max-width: clamp(50px, 12vw, 55px);
-        font-size: clamp(0.65rem, 2vw, 0.7rem);
-    }
+/* --- Hidden Keyboard Input for Native Mobile Keyboard --- */
+.hidden-keyboard-input {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
 }
 
 
@@ -873,93 +832,6 @@ body.light-theme .virtual-keyboard {
   scrollbar-color: #808a43 var(--color-dark-bg);
 }
 
-/* --- Leaderboard Positioning & Design --- */
-.leaderboard-container {
-    position: fixed;
-    right: clamp(10px, 2vw, 20px);
-    top: 50%;
-    transform: translateY(-50%);
-    /* Increased width */
-    width: clamp(240px, 25vw, 280px);
-    background: rgba(0, 0, 0, 0.85);
-    border: clamp(2px, 0.5vw, 3px) solid var(--color-icon-border); /* Increased outline thickness */
-    border-radius: clamp(6px, 1.5vw, 10px);
-    padding: clamp(10px, 2vw, 15px);
-    font-family: 'Courier New', monospace;
-    z-index: 900;
-    display: none; /* Hidden by default, shown only on desktop */
-    flex-direction: column;
-    box-sizing: border-box;
-}
-
-.leaderboard-scroll-area {
-    overflow-y: auto;
-    flex-grow: 1;
-    max-height: 350px;
-    padding-right: 8px; /* Space for the scrollbar */
-}
-
-.leaderboard-scroll-area::-webkit-scrollbar {
-    width: 10px;
-}
-
-.leaderboard-scroll-area::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-}
-
-.leaderboard-scroll-area::-webkit-scrollbar-thumb {
-    border-radius: 5px;
-    background: linear-gradient(
-        to bottom,
-        #00ff00 0% 14%,       
-        #006400 14% 28%,     
-        #ffff00 28% 42%,     
-        #8b8000 42% 56%,     
-        #808080 56% 70%,     
-        #1a1a1a 70% 84%,     
-        #ffffff 84% 100%     
-    );
-    border: 1px solid #000;
-}
-
-body.light-theme .leaderboard-container { background: rgba(255, 255, 255, 0.95); }
-
-.leaderboard-title {
-    text-align: center;
-    font-size: 1.3em; /* Slightly larger title */
-    color: var(--color-text-primary);
-    margin-bottom: 12px;
-    border-bottom: 2px solid var(--color-gray);
-    padding-bottom: 8px;
-    font-weight: bold;
-}
-
-.leaderboard-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 12px; /* Increased padding for better readability */
-    margin-bottom: 5px;
-    border-radius: 5px;
-    font-size: 1em;
-    color: #fff;
-    min-height: 20px; /* Ensures consistent row height */
-}
-
-/* Specific Rank Colors */
-.rank-1 { background-color: #00ff00 !important; color: #000 !important; font-weight: bold; box-shadow: 0 0 10px rgba(0, 255, 0, 0.3); }
-.rank-2 { background-color: #ffff00 !important; color: #000 !important; font-weight: bold; }
-.rank-3 { background-color: #808080 !important; color: #fff !important; }
-.rank-normal { background: #222; border: 1px solid #333; }
-
-/* Normal Row Color */
-.rank-normal {
-    background: #222;
-    border: 1px solid #444;
-}
-
-body.light-theme .rank-normal { background: #eee; color: #000; border-color: #ccc; }
-
 /* ==========================================
    COMPREHENSIVE RESPONSIVE DESIGN
    ========================================== */
@@ -967,71 +839,78 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
 /* Tablet Styles (768px - 1023px) - Hide leaderboard on tablets including iPad mini */
 @media (min-width: 768px) and (max-width: 1023px) {
     .App {
-        max-width: 600px;
-        padding: clamp(10px, 2vw, 15px);
-    }
-
-    /* Hide leaderboard on tablets */
-    .leaderboard-container {
-        display: none !important;
+        max-width: 650px;
+        padding: clamp(12px, 2vw, 18px);
+        padding-top: clamp(80px, 15vh, 110px);
     }
 
     .header {
-        top: clamp(10px, 2vh, 15px);
+        top: clamp(12px, 2.5vh, 18px);
     }
 
     .title-bitcount {
-        font-size: clamp(2.5rem, 6vw, 3.5rem);
+        font-size: clamp(2.8rem, 7vw, 3.8rem);
+    }
+
+    .top-right-nav {
+        top: 12px;
+        gap: 12px;
     }
 
     .board {
-        margin-top: clamp(60px, 12vh, 95px);
-        margin-bottom: clamp(8px, 1.5vh, 12px);
+        margin-top: clamp(70px, 14vh, 100px);
+        margin-bottom: clamp(12px, 2vh, 18px);
+        width: 100%;
     }
 
-    .App {
-        padding-top: clamp(70px, 13vh, 105px);
-    }
-
-    .virtual-keyboard {
-        max-width: 600px;
-        bottom: clamp(8px, 1.5vh, 15px);
+    .login-btn, .user-profile-icon {
+        width: clamp(44px, 9vw, 52px);
+        height: clamp(44px, 9vw, 52px);
+        min-width: 48px;
+        min-height: 48px;
     }
 
     .tile {
-        width: clamp(50px, 11vw, 58px);
-        height: clamp(50px, 11vw, 58px);
-        font-size: clamp(2rem, 5vw, 2.3rem);
+        width: clamp(55px, 12vw, 65px);
+        height: clamp(55px, 12vw, 65px);
+        font-size: clamp(2.2rem, 5.5vw, 2.6rem);
     }
-}
 
 /* Mobile Landscape (481px - 767px) */
 @media (min-width: 481px) and (max-width: 767px) {
     .App {
-        max-width: 480px;
-        padding: clamp(6px, 1.2vw, 12px);
-        padding-top: clamp(8px, 1.5vh, 12px);
+        max-width: 500px;
+        padding: clamp(8px, 1.5vw, 14px);
+        padding-top: clamp(65px, 12vh, 90px);
     }
 
     .header {
-        top: clamp(8px, 1.5vh, 12px);
+        top: clamp(10px, 1.8vh, 14px);
     }
 
     .board {
-        margin-top: clamp(50px, 10vh, 75px);
-    }
-
-    .App {
-        padding-top: clamp(60px, 11vh, 85px);
+        margin-top: clamp(60px, 11vh, 85px);
+        margin-bottom: clamp(8px, 1.5vh, 12px);
     }
 
     .title-bitcount {
-        font-size: clamp(2rem, 5.5vw, 2.8rem);
+        font-size: clamp(2.2rem, 6vw, 2.9rem);
     }
 
-    .board {
-        margin-bottom: clamp(5px, 1vh, 8px);
-        gap: clamp(3px, 0.8vw, 5px);
+    .top-right-nav {
+        top: 10px;
+        gap: 10px;
+    }
+
+    .row {
+        width: 44px;
+        height: 44px;
+        font-size: 1.7em;
+    }
+
+    .login-btn, .user-profile-icon {
+        width: 44px;
+        height: 44px;
     }
 
     .row {
@@ -1039,20 +918,9 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
     }
 
     .tile {
-        width: clamp(42px, 10.5vw, 54px);
-        height: clamp(42px, 10.5vw, 54px);
-        font-size: clamp(1.6rem, 4.5vw, 2.1rem);
-    }
-
-    /* Hide leaderboard on mobile landscape */
-    .leaderboard-container {
-        display: none !important;
-    }
-
-    .virtual-keyboard {
-        width: clamp(420px, 95vw, 480px);
-        bottom: clamp(6px, 1vh, 10px);
-        padding: clamp(3px, 0.8vw, 5px) clamp(1px, 0.3vw, 3px);
+        width: clamp(45px, 11vw, 56px);
+        height: clamp(45px, 11vw, 56px);
+        font-size: clamp(1.7rem, 4.8vw, 2.2rem);
     }
 }
 
@@ -1060,24 +928,40 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
 @media (max-width: 480px) {
     .App {
         max-width: 100%;
-        padding: clamp(4px, 1vw, 8px);
+        padding: clamp(6px, 1.2vw, 10px);
         justify-content: flex-start;
-        padding-top: clamp(5px, 1.5vh, 10px);
+        padding-top: clamp(65px, 12vh, 85px);
     }
 
     .header {
-        top: clamp(5px, 1.5vh, 10px);
+        top: clamp(8px, 1.5vh, 12px);
     }
 
     .title-bitcount {
-        font-size: clamp(1.5rem, 5.5vw, 2.5rem);
+        font-size: clamp(1.6rem, 6vw, 2.6rem);
         line-height: 1.1;
     }
 
+    .top-right-nav {
+        top: 8px;
+        right: 8px;
+        gap: 6px;
+    }
+
+    .login-btn, .user-profile-icon {
+        width: 44px;
+        height: 44px;
+        right: 8px;
+        min-width: 44px;
+        min-height: 44px;
+        font-size: clamp(0.7rem, 2vw, 0.8em);
+    }
+
     .board {
-        margin-top: clamp(45px, 9vh, 70px);
-        margin-bottom: clamp(3px, 0.8vh, 6px);
+        margin-top: clamp(50px, 10vh, 75px);
+        margin-bottom: clamp(6px, 1.2vh, 10px);
         gap: clamp(2px, 0.8vw, 4px);
+        padding: 0 clamp(6px, 1.5vw, 10px);
     }
 
     .row {
@@ -1086,65 +970,15 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
 
     .tile {
         /* Calculate to fit all 6 rows: (viewport height - header - keyboard - padding) / 6 */
-        width: clamp(36px, min(10vw, calc((100vh - 180px) / 7)), 50px);
-        height: clamp(36px, min(10vw, calc((100vh - 180px) / 7)), 50px);
-        font-size: clamp(1.3rem, min(4vw, calc((100vh - 180px) / 9)), 1.9rem);
+        width: clamp(38px, min(10vw, calc((100vh - 200px) / 7)), 52px);
+        height: clamp(38px, min(10vw, calc((100vh - 200px) / 7)), 52px);
+        font-size: clamp(1.4rem, min(4vw, calc((100vh - 200px) / 9)), 2rem);
         border-width: clamp(2px, 0.6vw, 3px);
     }
 
-    .row {
-        gap: clamp(2px, 0.8vw, 4px);
-    }
-
-    .header {
-        margin-bottom: clamp(3px, 1vh, 8px);
-    }
-
-    /* Hide leaderboard on very small screens to save space */
-    .leaderboard-container {
-        display: none !important;
-    }
-
-    .virtual-keyboard {
-        bottom: clamp(5px, 1vh, 10px);
-        width: clamp(280px, 98vw, 480px);
-    }
-
-   .help-icon, .login-btn, .user-profile-icon {
-    position: fixed;
-    top: 20px;
-    /* Use a consistent size for circles */
-    width: 40px; 
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid white;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 1100;
-}
-
-    .help-icon {
-        left: clamp(5px, 1.5vw, 10px);
-    }
-
-    .login-btn, .user-profile-icon {
-        right: clamp(5px, 1.5vw, 10px);
-        font-size: clamp(0.75rem, 2.2vw, 0.85em);
-        padding: clamp(5px, 1.2vw, 7px) clamp(8px, 2vw, 10px);
-    }
-
-    .virtual-keyboard {
-        padding: clamp(3px, 0.8vw, 5px) clamp(1px, 0.3vw, 2px);
-    }
-
-    .keyboard-row {
-        margin-bottom: clamp(2px, 0.5vw, 4px);
-    }
-
-    /* Ensure board doesn't overflow on very small screens */
+    /* Ensure board is fully visible on very small screens */
     .board {
+        width: 100%;
         max-width: calc(100vw - 20px);
         overflow-x: hidden;
     }
@@ -1155,10 +989,6 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
     .App {
         max-width: 520px;
         padding: clamp(8px, 1.5vw, 12px);
-    }
-
-    .leaderboard-container {
-        display: none !important;
     }
 
     .header {
@@ -1196,10 +1026,6 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
         padding: clamp(10px, 1.5vw, 15px);
     }
 
-    .leaderboard-container {
-        display: none !important;
-    }
-
     .header {
         top: clamp(8px, 1.5vh, 12px);
     }
@@ -1227,11 +1053,6 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
         height: clamp(52px, 10vw, 58px);
         font-size: clamp(2rem, 4.5vw, 2.3rem);
     }
-
-    .virtual-keyboard {
-        width: clamp(550px, 90vw, 600px);
-        bottom: clamp(8px, 1.5vh, 12px);
-    }
 }
 
 /* Nest Hub Max (1280x800) - Landscape */
@@ -1239,10 +1060,6 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
     .App {
         max-width: 650px;
         padding: clamp(12px, 1.5vw, 18px);
-    }
-
-    .leaderboard-container {
-        display: none !important;
     }
 
     .header {
@@ -1345,87 +1162,39 @@ body.light-theme .rank-normal { background: #eee; color: #000; border-color: #cc
     }
 }
 
-/* Leaderboard ONLY on specific resolutions - Hidden by default */
-/* 1366x768 */
-@media (min-width: 1366px) and (max-width: 1366px) and (min-height: 768px) and (max-height: 768px) {
-    .leaderboard-container {
-        display: flex !important;
+/* Ensure touch targets are at least 44px on all touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .help-icon, .login-btn, .user-profile-icon {
+        min-width: 48px !important;
+        min-height: 48px !important;
+    }
+
+    .key-btn {
+        min-height: 48px !important;
+        padding: 12px 8px !important;
+    }
+
+    .tile {
+        min-width: 40px !important;
+        min-height: 40px !important;
+    }
+
+    .primary-btn, .secondary-btn {
+        min-height: 48px !important;
+        min-width: 100px !important;
     }
 }
 
-/* 1360x768 */
-@media (min-width: 1360px) and (max-width: 1360px) and (min-height: 768px) and (max-height: 768px) {
-    .leaderboard-container {
-        display: flex !important;
-    }
-}
-
-/* 1920x1080 - All screen sizes (13.3", 14", 15.6") */
-@media (min-width: 1920px) and (max-width: 1920px) and (min-height: 1080px) and (max-height: 1080px) {
-    .App {
-        max-width: 600px;
+/* Tablet touch targets (larger buttons) */
+@media (min-width: 768px) and (hover: none) and (pointer: coarse) {
+    .help-icon, .login-btn, .user-profile-icon {
+        min-width: 52px !important;
+        min-height: 52px !important;
     }
 
-    .leaderboard-container {
-        display: flex !important;
-        width: clamp(280px, 18vw, 320px);
-        right: clamp(20px, 2vw, 30px);
-    }
-}
-
-/* 2560x1440 */
-@media (min-width: 2560px) and (max-width: 2560px) and (min-height: 1440px) and (max-height: 1440px) {
-    .App {
-        max-width: 650px;
-    }
-
-    .leaderboard-container {
-        display: flex !important;
-        width: clamp(300px, 15vw, 350px);
-        right: clamp(25px, 2.5vw, 35px);
-    }
-}
-
-/* 3840x2160 and above */
-@media (min-width: 3840px) {
-    .App {
-        max-width: 700px;
-    }
-
-    .leaderboard-container {
-        display: flex !important;
-        width: clamp(320px, 12vw, 380px);
-        right: clamp(30px, 3vw, 40px);
-    }
-}
-
-/* Ensure leaderboard is hidden on all other screen sizes */
-@media (max-width: 1359px), (min-width: 1361px) and (max-width: 1919px), (min-width: 1921px) and (max-width: 2559px), (min-width: 2561px) and (max-width: 3839px) {
-    .leaderboard-container {
-        display: none !important;
-    }
-}
-
-/* Large Desktop (1440px+) */
-@media (min-width: 1440px) {
-    .App {
-        max-width: 550px;
-    }
-
-    .leaderboard-container {
-        width: clamp(280px, 18vw, 320px);
-        right: clamp(20px, 2vw, 30px);
-    }
-}
-
-/* Ultra-wide screens (1920px+) */
-@media (min-width: 1920px) {
-    .App {
-        max-width: 600px;
-    }
-
-    .leaderboard-container {
-        width: clamp(300px, 15vw, 350px);
+    .key-btn {
+        min-height: 52px !important;
+        padding: 14px 10px !important;
     }
 }
 

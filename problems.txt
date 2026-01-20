@@ -1,6 +1,4 @@
 get GEMINI help for perfect UI|UX.
-fix ? outer circle size.
-make ? icon working on click.
 make signup/Login working on click.
 ------------------------------------------
 change 6th guess timings to 10 sec, 15 sec, 30 sec and more than 30 sec.

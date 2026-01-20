@@ -11,53 +11,6 @@ const API_BASE_URL = 'http://localhost:8000/api';
 axios.defaults.withCredentials = true;
 
 // --- Sub-Components ---
-const Leaderboard = ({ data }) => (
-    <div className="leaderboard-container">
-        <div className="leaderboard-title">LEADERBOARD</div>
-        <div className="leaderboard-scroll-area">
-            {data.map((player) => {
-                let rankClass = "rank-normal";
-                if (player.rank === 1) rankClass = "rank-1";
-                else if (player.rank === 2) rankClass = "rank-2";
-                else if (player.rank === 3) rankClass = "rank-3";
-                return (
-                    <div key={player.username} className={`leaderboard-row ${rankClass}`}>
-                        <span>{player.rank}. {player.username}</span>
-                        <span>{player.points}</span>
-                    </div>
-                );
-            })}
-        </div>
-    </div>
-);
-
-const VirtualKeyboard = ({ onKeyPress, letterStatuses = {} }) => {
-    const rows = [
-        ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-        ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-        ['Enter', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'Backspace']
-    ];
-    return (
-        <div className="virtual-keyboard">
-            {rows.map((row, i) => (
-                <div key={i} className="keyboard-row">
-                    {row.map((key) => {
-                        const status = letterStatuses[key] || '';
-                        return (
-                            <button 
-                                key={key} 
-                                className={`key-btn ${key === 'Enter' || key === 'Backspace' ? 'key-wide' : ''} ${status}`}
-                                onClick={() => onKeyPress(key)}
-                            >
-                                {key === 'Backspace' ? '⌫' : key === 'Enter' ? 'ENTER' : key}
-                            </button>
-                        );
-                    })}
-                </div>
-            ))}
-        </div>
-    );
-};
 
 const BitTitle = ({ text }) => (
     <h1 className="title-bitcount">
@@ -104,10 +57,9 @@ function App() {
     const [isLocked, setIsLocked] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [shakeRow, setShakeRow] = useState(null);
-    const [leaderboardData, setLeaderboardData] = useState([]);
     const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
     const [statsData, setStatsData] = useState(null);
-    const [isResetMode, setIsResetMode] = useState(false);
+    const [isResetMode] = useState(false);
     const [showRules, setShowRules] = useState(false);
     
     // Timer for the 6th guess points logic
@@ -115,7 +67,9 @@ function App() {
 
     // Universal dynamic height calculation
     const [appHeight, setAppHeight] = useState(() => window.innerHeight);
-    
+    // Reference for hidden input
+    const hiddenInputRef = useRef(null);
+    // Track if stats have been auto-shown
     const hasAutoShownStats = useRef(false);
 
     useEffect(() => {
@@ -124,12 +78,14 @@ function App() {
         return () => window.removeEventListener('resize', updateHeight);
     }, []);
 
-    const fetchLeaderboard = useCallback(async () => {
-        try {
-            const res = await axios.get(`${API_BASE_URL}/user/leaderboard`);
-            setLeaderboardData(res.data);
-        } catch (e) { console.error(e); }
-    }, []);
+    // Auto-focus hidden input when game is active
+    useEffect(() => {
+        if (gameState === 'playing' && !isLocked && !isStatsModalOpen) {
+            if (hiddenInputRef.current) {
+                hiddenInputRef.current.focus();
+            }
+        }
+    }, [gameState, isLocked, isStatsModalOpen]);
 
     const fetchSystemWord = useCallback(async (id) => {
         try {
@@ -139,9 +95,6 @@ function App() {
             return word;
         } catch (e) { return ""; }
     }, []);
-
-    // Get the Monthly Champion
-    const monthlyChampion = leaderboardData.length > 0 ? leaderboardData[0].username : null;
 
     const showStatistics = useCallback(async (win) => {
         try {
@@ -190,8 +143,7 @@ function App() {
 
     useEffect(() => {
         loadGameState();
-        fetchLeaderboard();
-    }, [loadGameState, fetchLeaderboard]);
+    }, [loadGameState]);
 
     // Handle timer for the 6th guess
     useEffect(() => {
@@ -250,7 +202,6 @@ function App() {
                         points: points, 
                         word: systemWord 
                     });
-                    fetchLeaderboard();
                 }
             }
         } catch (e) {
@@ -259,7 +210,7 @@ function App() {
         } finally {
             setIsSubmitting(false);
         }
-    }, [currentGuess, guesses, solvedStatuses, systemWord, user, isLocked, isSubmitting, timerStart, saveGameState, showStatistics, fetchLeaderboard]);
+    }, [currentGuess, guesses, solvedStatuses, systemWord, user, isLocked, isSubmitting, timerStart, saveGameState, showStatistics]);
 
     const handleKeyPress = useCallback((key) => {
         if (gameState !== 'playing' || isStatsModalOpen || isLocked || isSubmitting) return;
@@ -275,37 +226,19 @@ function App() {
         return () => document.removeEventListener('keydown', h);
     }, [handleKeyPress, isAuthModalOpen, isResetMode]);
 
-    const getKeyboardLetterStatuses = () => {
-        const statuses = {};
-        guesses.forEach((guess, i) => {
-            guess.split('').forEach((char, j) => {
-                const s = solvedStatuses[i][j];
-                if (s === 'correct') statuses[char] = 'correct';
-                else if (s === 'present' && statuses[char] !== 'correct') statuses[char] = 'present';
-                else if (s === 'absent' && !statuses[char]) statuses[char] = 'absent';
-            });
-        });
-        return statuses;
-    };
-
     return (
-        <div className="App" style={{ height: `${appHeight}px` }}>
+        <div className="App" style={{ height: 'auto' }}>
             {isResetMode ? <ResetPassword /> : (
                 <>
-                    <div className="help-icon" onClick={() => setShowRules(true)}>?</div>
+                    <a href="/rules.html" className="help-icon">?</a>
                     
                     <div className="top-right-nav">
-                        {monthlyChampion && (
-                            <div className="champion-banner">👑 {monthlyChampion} 👑</div>
-                        )}
                         {user ? <UserMenu /> : <button className="login-btn" onClick={openAuthModal}>Login</button>}
                     </div>
 
-                    <Leaderboard data={leaderboardData} />
-
                     <header className="header"><BitTitle text="QUICKLE" /></header>
                     
-                    <div className="board">
+                    <div className="board" onClick={() => hiddenInputRef.current?.focus()}>
                         {Array.from({ length: 6 }).map((_, i) => (
                             <Row 
                                 key={i} 
@@ -316,7 +249,37 @@ function App() {
                         ))}
                     </div>
 
-                    <VirtualKeyboard onKeyPress={handleKeyPress} letterStatuses={getKeyboardLetterStatuses()} />
+                    {/* Hidden input for native mobile keyboard */}
+                    <input 
+                        ref={hiddenInputRef}
+                        type="text"
+                        className="hidden-keyboard-input"
+                        onChange={(e) => {
+                            const val = e.target.value.toUpperCase();
+                            if (/^[A-Z]*$/.test(val) && val.length <= 5) {
+                                setCurrentGuess(val);
+                            } else if (val.length > 5) {
+                                e.target.value = currentGuess;
+                            }
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && currentGuess.length === 5) {
+                                submitGuess();
+                                e.preventDefault();
+                            } else if (e.key === 'Backspace') {
+                                setCurrentGuess(p => p.slice(0, -1));
+                                e.preventDefault();
+                            }
+                        }}
+                        value={currentGuess}
+                        maxLength="5"
+                        placeholder="Type here"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="characters"
+                        inputMode="text"
+                        aria-label="Guess input"
+                    />
                     
                     <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
                     
