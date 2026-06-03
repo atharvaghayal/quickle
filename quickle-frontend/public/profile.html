@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>Quickle Profile</title>
+    <link rel="icon" href="favicon.png" type="quickle-frontend\public\favicon.png" />
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-dark-bg: #000000;
+            --color-green: #00ff00;
+            --color-yellow: #ffff00;
+            --color-gray: #555555;
+            --color-text-light: #ffffff;
+            --color-card-bg: #111;
+        }
+
+        body {
+            background-color: var(--color-dark-bg);
+            color: var(--color-text-light);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .profile-container {
+            background-color: var(--color-card-bg);
+            padding: clamp(15px, 4vw, 30px);
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            border-radius: clamp(8px, 2vw, 10px);
+            text-align: center;
+            box-sizing: border-box;
+            margin: clamp(10px, 2vh, 20px);
+        }
+
+        .profile-avatar {
+            width: clamp(60px, 15vw, 80px);
+            height: clamp(60px, 15vw, 80px);
+            border-radius: 50%;
+            background: var(--color-green);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: clamp(1.5rem, 5vw, 2em);
+            margin: 0 auto clamp(15px, 3vh, 20px);
+            border: 2px solid var(--color-text-light);
+        }
+
+        .profile-username {
+            font-size: clamp(1.2rem, 4vw, 1.5em);
+            margin-bottom: clamp(20px, 4vh, 30px);
+            color: var(--color-yellow);
+            word-break: break-word;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: clamp(12px, 3vw, 20px);
+            margin-bottom: clamp(20px, 4vh, 30px);
+        }
+
+        .stat-item {
+            background: #222;
+            padding: clamp(12px, 3vw, 15px);
+            border-radius: clamp(4px, 1vw, 5px);
+            border: 1px solid var(--color-gray);
+            min-width: 0; /* Prevent grid overflow */
+        }
+
+        .stat-label {
+            font-size: clamp(0.8rem, 2.5vw, 0.9em);
+            color: #bbb;
+            margin-bottom: clamp(4px, 1vh, 5px);
+        }
+
+        .stat-value {
+            font-size: clamp(1.2rem, 4vw, 1.5em);
+            font-weight: bold;
+            color: var(--color-green);
+            word-break: break-word;
+        }
+
+        .back-btn {
+            background: var(--color-green);
+            color: #000;
+            border: none;
+            padding: clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 20px);
+            font-size: clamp(0.9rem, 2.5vw, 1em);
+            cursor: pointer;
+            border-radius: clamp(4px, 1vw, 5px);
+            font-family: 'Courier New', monospace;
+            min-height: 44px; /* Touch target size */
+            width: clamp(120px, 30vw, 150px);
+            margin: 0 auto;
+        }
+
+        .back-btn:hover {
+            opacity: 0.8;
+        }
+
+        .error {
+            color: #ff6b6b;
+            margin-bottom: clamp(15px, 3vh, 20px);
+            font-size: clamp(0.85rem, 2.5vw, 1rem);
+            padding: clamp(8px, 2vw, 10px);
+        }
+
+        /* Responsive Design - Mobile */
+        @media (max-width: 480px) {
+            body {
+                padding: clamp(10px, 2vw, 15px);
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: clamp(10px, 2.5vw, 15px);
+            }
+        }
+
+        /* Tablet adjustments */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Landscape orientation adjustments */
+        @media (orientation: landscape) and (max-height: 600px) {
+            .profile-container {
+                max-height: 95vh;
+                overflow-y: auto;
+            }
+
+            .profile-avatar {
+                width: clamp(50px, 12vw, 70px);
+                height: clamp(50px, 12vw, 70px);
+                font-size: clamp(1.2rem, 4vw, 1.8em);
+            }
+
+            .stats-grid {
+                gap: clamp(8px, 2vw, 12px);
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .back-btn {
+                min-width: 44px;
+                min-height: 44px;
+            }
+        }
+
+        /* Safe area support for devices with notches */
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(10px, env(safe-area-inset-left));
+                padding-right: max(10px, env(safe-area-inset-right));
+                padding-top: max(10px, env(safe-area-inset-top));
+                padding-bottom: max(10px, env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div id="loading">Loading profile...</div>
+        <div id="profile-content" style="display: none;">
+            <div class="profile-avatar" id="avatar"></div>
+            <div class="profile-username" id="username"></div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Games Played</div>
+                    <div class="stat-value" id="games-played"></div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Current Streak</div>
+                    <div class="stat-value" id="current-streak"></div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Max Streak</div>
+                    <div class="stat-value" id="max-streak"></div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Win Percentage</div>
+                    <div class="stat-value" id="win-percentage"></div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Points</div>
+                    <div class="stat-value" id="total-points"></div>
+                </div>
+            </div>
+            <button class="back-btn" onclick="goBack()">Back to Game</button>
+        </div>
+        <div id="error" class="error" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function loadProfile() {
+            try {
+                // Fetch user info
+                const userResponse = await fetch('http://localhost:8000/api/auth/me', {
+                    credentials: 'include'
+                });
+                const userData = await userResponse.json();
+
+                if (!userData.user) {
+                    throw new Error('Not logged in');
+                }
+
+                const username = userData.user.username;
+                const initial = username.charAt(0).toUpperCase();
+
+                // Fetch stats
+                const statsResponse = await fetch('http://localhost:8000/api/user/stats', {
+                    credentials: 'include'
+                });
+                const statsData = await statsResponse.json();
+
+                // Update UI
+                document.getElementById('avatar').textContent = initial;
+                document.getElementById('username').textContent = username;
+                document.getElementById('games-played').textContent = statsData.times_played;
+                document.getElementById('current-streak').textContent = statsData.streak + (statsData.currentStreakOngoing ? '*' : '');
+                document.getElementById('max-streak').textContent = statsData.max_streak;
+                document.getElementById('win-percentage').textContent = statsData.win_percentage + '%';
+                document.getElementById('total-points').textContent = statsData.total_points;
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('profile-content').style.display = 'block';
+
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').textContent = 'Failed to load profile. Please try again.';
+                document.getElementById('error').style.display = 'block';
+                console.error('Profile load error:', error);
+            }
+        }
+
+        function goBack() {
+            window.location.href = '/';
+        }
+
+        // Load profile on page load
+        loadProfile();
+    </script>
+</body>
+</html>

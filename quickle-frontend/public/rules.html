@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Quickle Rules card</title>
+    <link rel="icon" href="favicon.png" type="quickle-frontend\public\favicon.png" />
     <link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -15,40 +16,67 @@
             --color-card-bg: #111;
         }
 
-        body {
-            background-color: var(--color-dark-bg);
-            color: var(--color-text-light);
-            font-family: 'Courier New', Courier, monospace;
+        /* --- New Overlay Styles --- */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); /* Dark background for modal effect */
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
             padding: 20px;
+            box-sizing: border-box;
+            z-index: 9999;
+        }
+
+        body {
+            /* Keep body minimal as the overlay covers everything */
+            background-color: var(--color-dark-bg);
+            color: var(--color-text-light);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            min-height: 100vh;
         }
 
         .rules-container {
+            /* Styling for the card itself */
             background-color: var(--color-card-bg);
-            padding: 30px;
+            padding: clamp(15px, 4vw, 30px);
             max-width: 800px;
             width: 100%;
             position: relative;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5); /* Added subtle glow for visibility */
+            /* Ensure the content fits when resizing */
+            max-height: 95vh; 
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            box-sizing: border-box;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
         }
 
+        /* --- Content Styling (Unchanged) --- */
         .rules-container h1 {
             color: var(--color-yellow);
             font-family: 'Bitcount Prop Single', monospace;
             font-weight: 300;
-            font-size: 2.5em;
+            font-size: clamp(1.5rem, 5vw, 2.5em);
             text-align: center;
             margin-top: 0;
             text-shadow: 0 0 5px var(--color-yellow);
+            line-height: 1.2;
         }
 
         .subtitle {
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 1.1em;
+            margin-bottom: clamp(15px, 3vh, 30px);
+            font-size: clamp(0.9rem, 2.5vw, 1.1em);
             color: #ddd;
         }
         
@@ -56,26 +84,37 @@
             color: var(--color-green);
             border-bottom: 1px dashed var(--color-gray);
             padding-bottom: 5px;
-            margin-top: 25px;
-            font-size: 1.2em;
+            margin-top: clamp(15px, 3vh, 25px);
+            font-size: clamp(1rem, 3vw, 1.2em);
         }
 
         ul {
             list-style-type: '⚡ ';
-            padding-left: 20px;
+            padding-left: clamp(15px, 4vw, 20px);
+            font-size: clamp(0.85rem, 2.5vw, 1rem);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
-            font-size: 0.9em;
+            font-size: clamp(0.75rem, 2vw, 0.9em);
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        thead, tbody, tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
         }
 
         th, td {
             border: 1px solid var(--color-gray);
-            padding: 5px 8px;
+            padding: clamp(5px, 1.5vw, 8px);
             text-align: left;
+            word-wrap: break-word;
         }
 
         th {
@@ -84,106 +123,200 @@
         }
 
         .time-points {
-            padding: 10px;
+            padding: clamp(8px, 2vw, 10px);
             background: #0a0a0a;
             border: 1px solid #333;
-            margin-top: 15px;
+            margin-top: clamp(10px, 2vh, 15px);
+            font-size: clamp(0.85rem, 2.5vw, 1rem);
         }
         
         .penalty {
-            color: #ff3333; /* Red color for penalty text */
+            color: #ff3333;
             font-weight: bold;
         }
 
         .back-link {
+            /* This link now serves as the explicit close button */
             display: block;
             text-align: center;
-            margin-top: 30px;
-            font-size: 1.1em;
+            margin-top: clamp(20px, 3vh, 30px);
+            font-size: clamp(0.95rem, 2.5vw, 1.1em);
             color: var(--color-text-light);
             text-decoration: none;
             border: 1px solid var(--color-text-light);
-            padding: 8px 15px;
-            width: 150px;
+            padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 15px);
+            width: clamp(120px, 30vw, 150px);
             margin-left: auto;
             margin-right: auto;
+            min-height: 44px; /* Touch target size */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Added Close Button Styling */
+        .close-btn {
+            position: absolute;
+            top: clamp(8px, 2vw, 10px);
+            right: clamp(8px, 2vw, 10px);
+            background: none;
+            border: 2px solid var(--color-text-light);
+            color: var(--color-text-light);
+            font-size: clamp(1rem, 3vw, 1.2em);
+            cursor: pointer;
+            padding: clamp(4px, 1vw, 8px) clamp(6px, 1.5vw, 10px);
+            line-height: 1;
+            user-select: none;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Responsive Design - Mobile */
+        @media (max-width: 480px) {
+            .overlay {
+                padding: clamp(10px, 2vw, 15px);
+            }
+
+            .rules-container {
+                padding: clamp(12px, 3vw, 20px);
+            }
+
+            .section {
+                margin-bottom: clamp(15px, 3vh, 20px);
+            }
+
+            .section p {
+                font-size: clamp(0.85rem, 2.5vw, 1rem);
+                line-height: 1.5;
+            }
+        }
+
+        /* Tablet adjustments */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .rules-container {
+                padding: clamp(20px, 3vw, 25px);
+            }
+        }
+
+        /* Landscape orientation adjustments */
+        @media (orientation: landscape) and (max-height: 600px) {
+            .rules-container {
+                max-height: 90vh;
+            }
+
+            .rules-container h1 {
+                font-size: clamp(1.2rem, 4vw, 2rem);
+                margin-bottom: clamp(5px, 1vh, 10px);
+            }
+
+            .subtitle {
+                margin-bottom: clamp(10px, 2vh, 15px);
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .close-btn, .back-link {
+                min-width: 44px;
+                min-height: 44px;
+            }
+        }
+
+        /* Safe area support for devices with notches */
+        @supports (padding: max(0px)) {
+            .overlay {
+                padding-left: max(10px, env(safe-area-inset-left));
+                padding-right: max(10px, env(safe-area-inset-right));
+                padding-top: max(10px, env(safe-area-inset-top));
+                padding-bottom: max(10px, env(safe-area-inset-bottom));
+            }
         }
     </style>
 </head>
 <body>
-    <div class="rules-container">
-        <h1>🎮 QUICKLE – RULES CARD</h1>
-        <p class="subtitle">A daily 5-letter guessing challenge with twists &amp; timing!</p>
+    <div class="overlay" onclick="goBackToGame()">
         
-        <div class="section">
-            <h2>🕹️ HOW TO PLAY</h2>
-            <ul>
-                <li>Guess the 5-letter hidden word within 6 total attempts.</li>
-                <li>Each guess gives you feedback to help you move closer to the solution.</li>
-                <li>Letter with 🟢 color indicates letter in correct place.</li>
-                <li>Letter with 🟡 color indicates letter exists in word but at wrong place.</li>
-                <li>Letter with ⚫ color indicates that letter dosen't exists in the word.</li>
-                <li>Fewer guesses = higher points!</li>
-            </ul>
-        </div>
+        <div class="rules-container" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="goBackToGame()">X</button>
 
-        <div class="section">
-            <h2>🏅 POINTS SYSTEM (Attempts 1–5)</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Guess Number</th>
-                        <th>Points Earned</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>1st Guess</td><td>25 pts</td></tr>
-                    <tr><td>2nd Guess</td><td>18 pts</td></tr>
-                    <tr><td>3rd Guess</td><td>15 pts</td></tr>
-                    <tr><td>4th Guess</td><td>12 pts</td></tr>
-                    <tr><td>5th Guess</td><td>6 pts</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="section">
-            <h2>⏱️ THE FINAL TWIST – TIMED 6th GUESS</h2>
-            <p>If you still haven’t cracked the word after 5 tries, you get one last chance under strict time pressure!</p>
-
-            <div class="time-points">
-                <p>⏳ 0–5 sec → 5 pts 💨</p>
-                <p>⏳ 6–9 sec → 3 pts</p>
-                <p>⏳ 10–12 sec → 1 pt 🐢</p>
-                <p>⏳ &gt;12 sec → 0 pts ❌</p>
+            <h1>🎮 QUICKLE – RULES CARD</h1>
+            <p class="subtitle">A daily 5-letter guessing challenge with twists &amp; timing!</p>
+            
+            <div class="section">
+                <h2>🕹️ HOW TO PLAY</h2>
+                <ul>
+                    <li>Guess the 5-letter hidden word within 6 total attempts.</li>
+                    <li>Each guess gives you feedback to help you move closer to the solution.</li>
+                    <li>Letter with 🟢 color indicates letter in correct place.</li>
+                    <li>Letter with 🟡 color indicates letter exists in word but at wrong place.</li>
+                    <li>Letter with ⚫ color indicates that letter dosen't exists in the word.</li>
+                    <li>Fewer guesses = higher points!</li>
+                </ul>
             </div>
-        </div>
 
-        <div class="section">
-            <h2>❗ IF YOU FAIL ALL 6 GUESSES, "LIFE IS UNFAIR"</h2>
-            <p>A small penalty is added to you score.</p>
-            <p class="penalty">
-                ➤ Point Deduction: –5 points 🔻
+            <div class="section">
+                <h2>🏅 POINTS SYSTEM (Attempts 1–5)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Guess Number</th>
+                            <th>Points Earned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1st Guess</td><td>25 pts</td></tr>
+                        <tr><td>2nd Guess</td><td>18 pts</td></tr>
+                        <tr><td>3rd Guess</td><td>15 pts</td></tr>
+                        <tr><td>4th Guess</td><td>12 pts</td></tr>
+                        <tr><td>5th Guess</td><td>6 pts</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2>⏱️ THE FINAL TWIST – TIMED 6th GUESS</h2>
+                <p>If you still haven’t cracked the word after 5 tries, you get one last chance under strict time pressure!</p>
+
+                <div class="time-points">
+                    <p>⏳ 0–5 sec → 5 pts 💨</p>
+                    <p>⏳ 6–9 sec → 3 pts</p>
+                    <p>⏳ 10–12 sec → 1 pt 🐢</p>
+                    <p>⏳ &gt;12 sec → 0 pts ❌</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>❗ IF YOU FAIL ALL 6 GUESSES, "LIFE IS UNFAIR"</h2>
+                <p>A small penalty is added to you score.</p>
+                <p class="penalty">
+                    ➤ Point Deduction: –5 points 🔻
+                </p>
+                <p>If your score is already 0 and you fail to guess, your score becomes –5 points.</p>
+            </div>
+
+            <a href="#" onclick="goBackToGame(); return false;" class="back-link">← Back to Game</a>
+            <p style="text-align: center; margin-top: 15px;">
+                Quickle-Word Game | Built with ❤️ by <a href="https://chess.com">Atharva Ghayal</a>
             </p>
-            <p>If your score is already 0 and you fail to guess, your score becomes –5 points.</p>
         </div>
-
-        <a href="/" class="back-link">← Back to Game</a>
-        <p style="text-align: center;">
-            Quickle-Word Game | Built with ❤️ by Atharva Ghayal
-        </p>
+        
     </div>
+    
     <script>
-    // Function to navigate back to the game page
-    function goBackToGame() {
-        window.location.href = '/';
-    }
-
-    document.addEventListener('keyup', function(event) {
-        // Check if the pressed key is the Escape key (keyCode 27)
-        if (event.keyCode === 27 || event.key === 'Escape') {
-            goBackToGame();
+        // Function to navigate back to the game page (Root path)
+        function goBackToGame() {
+            window.location.href = '/';
         }
-    });
-</script>
+
+        // Global Event listener to detect the ESC key
+        document.addEventListener('keyup', function(event) {
+            if (event.keyCode === 27 || event.key === 'Escape') {
+                goBackToGame();
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,1548 @@
+/* --- 1. Font Integration --- */
+
+@import url('https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&display=swap');
+
+/* --- 2. Color Variables --- */
+:root {
+  /* DARK THEME DEFAULTS */
+  --color-dark-bg: #000000;
+  --color-text-primary: #ffffff;
+  --color-icon-border: #ffffff;
+  
+  /* NEW/UPDATED TILE VARIABLES (Default to Dark Theme) */
+  --color-tile-bg: var(--color-dark-bg);
+  --color-tile-letter: var(--color-text-primary); 
+  --color-absent-border: #555555; /* Fixed Grey border for absent letters */
+  --color-empty-border: var(--color-text-primary); /* White border for empty/typing */
+  
+  /* LIGHT THEME VARIABLES */
+  --color-light-bg: #fcdb6d; /* Cream color */
+  --color-light-text-primary: #000000;
+  
+  /* GAME STATUS COLORS (Keep these consistent between themes) */
+  --color-green: #00ff00;
+  --color-yellow: #ffff00;
+  --color-gray: #555555;
+}
+
+/* --- Base Styles --- */
+body {
+  background-color: var(--color-dark-bg);
+  color: var(--color-text-primary);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Changed from min-height to height for exact fit */
+  font-family: 'Courier New', Courier, monospace;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  overflow-y: hidden; /* Prevent vertical scrolling */
+  position: fixed;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(10px, 2vw, clamp(15px, 2.5vw, 20px)); /* Universal responsive padding */
+  padding-top: clamp(55px, 10vh, clamp(70px, 13vh, 110px)); /* Universal responsive top padding for fixed title */
+  position: relative;
+  /* CRITICAL: Ensure .App is transparent to show body background */
+  background-color: transparent;
+  /* Height set to auto for proper layout */
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  justify-content: flex-start; /* Start from top */
+  min-height: 100vh;
+  padding-bottom: clamp(30px, 5vh, 50px);
+}
+
+/* Reduce padding on very small screens */
+@media (max-width: 480px) {
+  .App {
+    padding: clamp(8px, 1.5vw, 15px); /* Reduced padding to fit all rows */
+    padding-top: clamp(55px, 11vh, 85px); /* Space for fixed title on mobile */
+    padding-bottom: clamp(30px, 5vh, 50px);
+    /* Height now set to auto */
+  }
+
+  .header {
+    top: clamp(8px, 1.5vh, 15px);
+  }
+
+  .board {
+    margin-top: clamp(45px, 9vh, 70px); /* Space below fixed title on mobile */
+  }
+}
+
+.help-icon {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+    font-size: 1.6em;
+    font-weight: bold;
+    text-shadow: 0 0 5px var(--color-icon-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    text-decoration: none;
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.help-icon:hover {
+    box-shadow: 0 0 15px var(--color-icon-border);
+    transform: scale(1.05);
+}
+
+/* --- Login/Signup Button (Now positioned at top right) --- */
+.login-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid white;
+    color: white;
+    font-size: 0.9em;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    border-radius: 4px;
+    text-shadow: 0 0 5px var(--color-icon-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    min-height: 30px;
+    transition: all 0.2s ease;
+}
+
+.login-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* --- LIGHT THEME ICON OVERRIDE: Remove Shadow --- */
+body.light-theme .help-icon {
+    text-shadow: none;
+    border-color: black;
+}
+
+body.light-theme .help-icon {
+    border-color: black;
+}
+
+/* --- Top Right Navigation --- */
+.top-right-nav {
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    z-index: 1150;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+    max-width: 400px;
+    justify-content: flex-end;
+}
+
+/* --- Header/Title Styling --- */
+.header {
+  position: fixed;
+  top: clamp(6px, 1.2vh, clamp(10px, 2vh, 20px)); /* Universal responsive top */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  text-align: center;
+  z-index: 100;
+  margin: 0;
+  padding: 0;
+}
+
+.title-bitcount {
+  font-family: 'Bitcount Prop Single', monospace; 
+  font-weight: 300; 
+  font-size: clamp(1.5rem, min(4.5vw, min(6vh, 3.5rem)), 3.5rem); /* Universal responsive title */
+  letter-spacing: clamp(0.02em, 0.1vw, 0.05em); /* Responsive letter spacing */
+  margin: 0;
+  line-height: clamp(1.05, 0.1vh, 1.1); /* Responsive line height */
+  color: var(--color-text-primary);
+  user-select: none;
+}
+
+/* Character-specific styling */
+.bit-char {
+  display: inline-block;
+  text-shadow: 0 0 5px var(--color-text-primary), 
+               0 0 10px rgba(255, 255, 255, 0.5); 
+}
+
+.word-separator {
+    display: inline-block;
+    width: 0;
+    margin-right: 0.5em; /* Gap between 'D' and 'W' */
+    text-shadow: none;
+}
+
+/* Score and Timer Display */
+.score-display, .timer-display {
+    font-size: 1.2em;
+    margin-top: 10px;
+    color: var(--color-yellow);
+    text-shadow: 0 0 3px var(--color-yellow);
+}
+
+/* ---------------------------------
+   --- BOARD/TILE STYLING ---
+   --------------------------------- */
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3px, 0.8vw, clamp(4px, 0.8vh, 8px)); /* Universal responsive gap */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  justify-content: flex-start; /* Start from top */
+  margin-top: clamp(60px, 11vh, clamp(75px, 13vh, 110px)); /* Universal responsive top margin */
+  margin-bottom: clamp(12px, 2vh, clamp(15px, 2.5vh, 25px)); /* Universal responsive bottom margin */
+  padding: 0 clamp(5px, 1vw, 10px); /* Add horizontal padding for small screens */
+}
+
+.row {
+  display: flex;
+  gap: clamp(2px, 0.8vw, clamp(3px, 0.6vh, 6px)); /* Universal responsive gap */
+  justify-content: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.tile {
+  /* Universal responsive tile sizing - scales smoothly across all resolutions */
+  width: clamp(36px, min(10vw, min(12vh, calc((100vh - clamp(180px, 25vh, 250px)) / 7))), 60px); 
+  height: clamp(36px, min(10vw, min(12vh, calc((100vh - clamp(180px, 25vh, 250px)) / 7))), 60px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: clamp(1.3rem, min(4vw, min(5vh, calc((100vh - clamp(180px, 25vh, 250px)) / 9))), 2.5em); 
+  font-weight: bold;
+  text-transform: uppercase;
+  box-sizing: border-box;
+  flex-shrink: 0; /* Prevent tiles from shrinking */ 
+  
+  /* Tile Background blends with page background */
+  background: var(--color-tile-bg); 
+  
+  /* Default letter color (for typing/absent) */
+  color: var(--color-tile-letter); 
+  
+  /* Default border color (for empty/typing) - responsive border */
+  border: clamp(2px, 0.5vw, 4px) solid var(--color-empty-border); 
+}
+
+/* STATUS-SPECIFIC STYLING */
+.tile.correct {
+  border: clamp(2px, 0.8vw, 4px) solid var(--color-green);
+  color: var(--color-green);
+  background: var(--color-tile-bg); 
+}
+
+.tile.present {
+  border: clamp(2px, 0.8vw, 4px) solid var(--color-yellow);
+  color: var(--color-yellow);
+  background: var(--color-tile-bg); 
+}
+
+.tile.absent {
+  color: var(--color-tile-letter); 
+  /* Border turns gray in BOTH themes */
+  border: clamp(2px, 0.8vw, 4px) solid var(--color-absent-border); 
+  background: var(--color-tile-bg); 
+}
+
+/* Empty/Typing */
+.tile.empty, .tile.typing {
+  color: var(--color-tile-letter);
+  border: clamp(2px, 0.8vw, 4px) solid var(--color-empty-border); 
+  background: var(--color-tile-bg); 
+}
+.tile.empty {
+  color: transparent; /* No letter shown for truly empty tiles */
+}
+
+/* ---------------------------------
+   --- STATS MODAL STYLING ---
+   --------------------------------- */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 10px;
+}
+
+.stats-card {
+    background-color: #1a1a1a;
+    border: 2px solid var(--color-text-primary);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    padding: clamp(15px, 4vw, 25px);
+    width: 90%;
+    max-width: clamp(300px, 90vw, 450px);
+    color: var(--color-text-primary);
+    position: relative;
+    box-sizing: border-box;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Light Theme Modal Override */
+body.light-theme .stats-card {
+    background-color: #fff;
+    border-color: var(--color-light-text-primary);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.stats-card h2 {
+    color: var(--color-green);
+    font-size: clamp(1.2rem, 4vw, 1.5em);
+    margin-bottom: clamp(15px, 3vh, 20px);
+    text-shadow: 0 0 5px var(--color-green);
+}
+body.light-theme .stats-card h2 {
+    text-shadow: none;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: 2px solid var(--color-icon-border);
+    color: var(--color-text-primary);
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 2px 8px;
+    line-height: 1;
+    user-select: none;
+}
+
+/* Answer Reveal */
+.answer-reveal {
+    margin-bottom: clamp(15px, 3vh, 25px);
+    font-size: clamp(0.95rem, 3vw, 1.1em);
+    color: #f33;
+    word-break: break-word;
+}
+
+.actual-answer {
+    font-size: clamp(1rem, 3.5vw, 1.2em);
+    font-weight: bold;
+    color: var(--color-yellow);
+    text-transform: uppercase;
+}
+
+/* Stats Row (Horizontal Line) */
+.stats-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    margin: clamp(15px, 3vh, 20px) 0;
+    padding: clamp(10px, 2vh, 15px) 0;
+    border-top: 1px solid var(--color-gray);
+    border-bottom: 1px solid var(--color-gray);
+    flex-wrap: wrap;
+    gap: clamp(8px, 2vw, 12px);
+}
+
+.stat-item {
+    text-align: center;
+    min-width: 60px;
+    flex: 1 1 auto;
+}
+
+.stat-label {
+    font-size: clamp(0.75rem, 2.5vw, 0.9em);
+    color: #bbb;
+    margin-bottom: clamp(3px, 1vh, 5px);
+}
+
+.stat-value {
+    font-size: clamp(1.3rem, 4.5vw, 1.8em);
+    font-weight: bold;
+    color: var(--color-text-primary);
+    word-break: break-word;
+}
+
+/* Login Prompt */
+.login-prompt {
+    font-style: italic;
+    color: var(--color-yellow);
+    margin: clamp(15px, 3vh, 20px) 0;
+    padding: clamp(8px, 2vw, 10px);
+    border: 1px dashed var(--color-gray);
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+    line-height: 1.5;
+}
+
+/* Countdown Section */
+.countdown-section {
+    margin-top: 30px;
+}
+.countdown-timer {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--color-green);
+    text-shadow: 0 0 5px var(--color-green);
+    margin-top: 5px;
+}
+body.light-theme .countdown-timer {
+    text-shadow: none;
+}
+
+.footer-credit {
+    margin-top: 20px;
+    font-size: 0.75em;
+    color: #999;
+}
+
+/* --- LOCK MODAL --- */
+.lock-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20000;
+    padding: 16px;
+}
+
+.lock-modal {
+    background: #111;
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-icon-border);
+    padding: 20px;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+body.light-theme .lock-modal {
+    background: #fff;
+    color: var(--color-light-text-primary);
+}
+
+/* --- AUTH MODAL --- */
+.auth-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 15000;
+    padding: 16px;
+}
+
+.auth-modal {
+    background: #000000; /* Pure black background */
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-icon-border);
+    padding: clamp(20px, 5vw, 30px);
+    width: 100%;
+    max-width: clamp(320px, 90vw, 400px);
+    border-radius: clamp(8px, 2vw, 12px);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); /* Slight green glow */
+    display: flex;
+    flex-direction: column;
+    gap: clamp(15px, 3vw, 20px);
+    box-sizing: border-box;
+}
+
+body.light-theme .auth-modal {
+    background: #fff;
+    color: var(--color-light-text-primary);
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Vertical gap between fields */
+    width: 100%;
+}
+
+.auth-form label {
+    display: flex;
+    flex-direction: column; /* Force Stack: Label text above Input */
+    align-items: flex-start;
+    font-size: 0.85rem;
+    color: #888; /* Dimmer label text */
+    gap: 8px;
+    width: 100%;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 12px;
+    background: #111; /* Dark input background */
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    box-sizing: border-box; /* Ensures padding doesn't break width */
+}
+
+.auth-modal .primary-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    background: var(--color-green);
+    color: #000;
+    border: none;
+    font-size: 1em;
+    letter-spacing: 1px;
+}
+
+.primary-btn, .secondary-btn {
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 2px solid var(--color-icon-border);
+    background: var(--color-green);
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.secondary-btn {
+    width: 100%;
+    background: transparent;
+    color: inherit;
+}
+
+.auth-divider {
+    text-align: center;
+    margin: 10px 0;
+    position: relative;
+}
+
+.auth-divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: #333;
+    z-index: 0;
+}
+
+.auth-divider span {
+    background: #111; /* Matches modal bg */
+    padding: 0 10px;
+    position: relative;
+    z-index: 1;
+    color: #666;
+    font-size: 0.8em;
+}
+
+.auth-error {
+    color: #ff6b6b;
+    font-size: 0.9em;
+}
+
+.switch-mode {
+    margin-top: 12px;
+    text-align: center;
+}
+
+.switch-mode button {
+    border: none;
+    background: none;
+    color: var(--color-yellow);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* --- RESET PASSWORD --- */
+.reset-password {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 15000;
+    padding: clamp(10px, 2vw, 20px);
+    box-sizing: border-box;
+}
+
+.reset-password > div {
+    background: #000000;
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-icon-border);
+    padding: clamp(20px, 5vw, 30px);
+    width: 100%;
+    max-width: clamp(320px, 90vw, 400px);
+    border-radius: clamp(8px, 2vw, 12px);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(15px, 3vw, 20px);
+    box-sizing: border-box;
+}
+
+body.light-theme .reset-password > div {
+    background: #fff;
+    color: var(--color-light-text-primary);
+}
+
+.reset-password h2 {
+    text-align: center;
+    margin: 0;
+    color: var(--color-green);
+}
+
+.reset-password form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.reset-password input {
+    width: 100%;
+    padding: 12px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    box-sizing: border-box;
+}
+
+body.light-theme .reset-password input {
+    background: #f5f5f5;
+    color: #000;
+    border: 1px solid #ccc;
+}
+
+.reset-password button {
+    width: 100%;
+    padding: 14px;
+    background: var(--color-green);
+    color: #000;
+    border: none;
+    font-size: 1em;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.reset-password .error {
+    color: #ff6b6b;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+.reset-password .success {
+    color: var(--color-green);
+    text-align: center;
+}
+
+/* --- USER MENU --- */
+.user-menu-wrapper {
+    position: fixed;
+    right: clamp(8px, 2vw, 20px);
+    top: 20px;
+    z-index: 1200;
+}
+
+.user-avatar {
+    width: clamp(36px, 8vw, 44px);
+    height: clamp(36px, 8vw, 44px);
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 50%;
+    background: var(--color-green);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+    border: 2px solid var(--color-icon-border);
+    transition: all 0.2s ease;
+    font-size: clamp(0.8rem, 2vw, 1rem);
+}
+
+.user-avatar:hover {
+    box-shadow: 0 0 12px var(--color-green);
+    transform: scale(1.1);
+}
+
+.user-menu {
+    position: absolute;
+    right: 0;
+    margin-top: 8px;
+    background: #111;
+    border: 2px solid var(--color-icon-border);
+    min-width: 200px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 1300;
+}
+
+body.light-theme .user-menu {
+    background: #fff;
+}
+
+.user-menu__header {
+    padding: 12px;
+    border-bottom: 1px solid var(--color-gray);
+}
+
+.user-menu__name {
+    font-weight: bold;
+    word-break: break-all;
+}
+
+.user-menu__item {
+    width: 100%;
+    background: none;
+    color: inherit;
+    border: none;
+    text-align: left;
+    padding: 12px;
+    cursor: pointer;
+}
+
+.user-menu__item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.user-profile-icon {
+    position: fixed;
+    right: clamp(8px, 2vw, 20px);
+    top: 20px;
+    width: clamp(40px, 8vw, 50px);
+    height: clamp(40px, 8vw, 50px);
+    min-width: 44px;
+    min-height: 44px;
+    background-color: var(--color-green); /* Your #00ff00 green */
+    color: #000; /* Black letter for contrast on green */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+    cursor: pointer;
+    z-index: 1000;
+    border: 2px solid var(--color-icon-border);
+    transition: transform 0.2s ease;
+}
+
+.user-profile-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px var(--color-green);
+}
+
+/* --- Hidden Keyboard Input for Native Mobile Keyboard --- */
+.hidden-keyboard-input {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+
+.row-shake {
+  animation: shake 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-dark-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  /* Equal mix of all requested colors using a linear gradient */
+  background: linear-gradient(
+    to bottom,
+    #00ff00 0% 14%,       /* Green */
+    #006400 14% 28%,     /* Dark Green */
+    #ffff00 28% 42%,     /* Yellow */
+    #8b8000 42% 56%,     /* Dark Yellow */
+    #808080 56% 70%,     /* Grey */
+    #1a1a1a 70% 84%,     /* Near Black */
+    #ffffff 84% 100%     /* White */
+  );
+  border: 1px solid #333;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+  filter: brightness(1.1);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #808a43 var(--color-dark-bg);
+}
+
+/* ==========================================
+   COMPREHENSIVE RESPONSIVE DESIGN
+   ========================================== */
+
+/* Tablet Styles (768px - 1023px) - Hide leaderboard on tablets including iPad mini */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .App {
+        max-width: 650px;
+        padding: clamp(12px, 2vw, 18px);
+        padding-top: clamp(80px, 15vh, 110px);
+    }
+
+    .header {
+        top: clamp(12px, 2.5vh, 18px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(2.8rem, 7vw, 3.8rem);
+    }
+
+    .top-right-nav {
+        top: 12px;
+        gap: 12px;
+    }
+
+    .board {
+        margin-top: clamp(70px, 14vh, 100px);
+        margin-bottom: clamp(12px, 2vh, 18px);
+        width: 100%;
+    }
+
+    .login-btn, .user-profile-icon {
+        width: clamp(44px, 9vw, 52px);
+        height: clamp(44px, 9vw, 52px);
+        min-width: 48px;
+        min-height: 48px;
+    }
+
+    .tile {
+        width: clamp(55px, 12vw, 65px);
+        height: clamp(55px, 12vw, 65px);
+        font-size: clamp(2.2rem, 5.5vw, 2.6rem);
+    }
+
+/* Mobile Landscape (481px - 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+    .App {
+        max-width: 500px;
+        padding: clamp(8px, 1.5vw, 14px);
+        padding-top: clamp(65px, 12vh, 90px);
+    }
+
+    .header {
+        top: clamp(10px, 1.8vh, 14px);
+    }
+
+    .board {
+        margin-top: clamp(60px, 11vh, 85px);
+        margin-bottom: clamp(8px, 1.5vh, 12px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(2.2rem, 6vw, 2.9rem);
+    }
+
+    .top-right-nav {
+        top: 10px;
+        gap: 10px;
+    }
+
+    .row {
+        width: 44px;
+        height: 44px;
+        font-size: 1.7em;
+    }
+
+    .login-btn, .user-profile-icon {
+        width: 44px;
+        height: 44px;
+    }
+
+    .row {
+        gap: clamp(3px, 0.8vw, 5px);
+    }
+
+    .tile {
+        width: clamp(45px, 11vw, 56px);
+        height: clamp(45px, 11vw, 56px);
+        font-size: clamp(1.7rem, 4.8vw, 2.2rem);
+    }
+}
+
+/* iPhone SE and Small Mobile (320px - 480px) */
+@media (max-width: 480px) {
+    .App {
+        max-width: 100%;
+        padding: clamp(6px, 1.2vw, 10px);
+        justify-content: flex-start;
+        padding-top: clamp(65px, 12vh, 85px);
+    }
+
+    .header {
+        top: clamp(8px, 1.5vh, 12px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(1.6rem, 6vw, 2.6rem);
+        line-height: 1.1;
+    }
+
+    .top-right-nav {
+        top: 8px;
+        right: 8px;
+        gap: 6px;
+    }
+
+    .login-btn, .user-profile-icon {
+        width: 44px;
+        height: 44px;
+        right: 8px;
+        min-width: 44px;
+        min-height: 44px;
+        font-size: clamp(0.7rem, 2vw, 0.8em);
+    }
+
+    .board {
+        margin-top: clamp(50px, 10vh, 75px);
+        margin-bottom: clamp(6px, 1.2vh, 10px);
+        gap: clamp(2px, 0.8vw, 4px);
+        padding: 0 clamp(6px, 1.5vw, 10px);
+    }
+
+    .row {
+        gap: clamp(2px, 0.8vw, 4px);
+    }
+
+    .tile {
+        /* Calculate to fit all 6 rows: (viewport height - header - keyboard - padding) / 6 */
+        width: clamp(38px, min(10vw, calc((100vh - 200px) / 7)), 52px);
+        height: clamp(38px, min(10vw, calc((100vh - 200px) / 7)), 52px);
+        font-size: clamp(1.4rem, min(4vw, calc((100vh - 200px) / 9)), 2rem);
+        border-width: clamp(2px, 0.6vw, 3px);
+    }
+
+    /* Ensure board is fully visible on very small screens */
+    .board {
+        width: 100%;
+        max-width: calc(100vw - 20px);
+        overflow-x: hidden;
+    }
+}
+
+/* Surface Duo (540x720) - Portrait */
+@media (min-width: 540px) and (max-width: 540px) and (min-height: 720px) and (max-height: 720px) {
+    .App {
+        max-width: 520px;
+        padding: clamp(8px, 1.5vw, 12px);
+    }
+
+    .header {
+        top: clamp(8px, 1.5vh, 12px);
+    }
+
+    .board {
+        margin-top: clamp(50px, 10vh, 80px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(2rem, 5.5vw, 2.8rem);
+    }
+
+    .board {
+        margin-bottom: clamp(6px, 1.2vh, 10px);
+    }
+
+    .tile {
+        width: clamp(45px, 10.5vw, 55px);
+        height: clamp(45px, 10.5vw, 55px);
+        font-size: clamp(1.8rem, 4.8vw, 2.2rem);
+    }
+
+    .virtual-keyboard {
+        width: clamp(480px, 92vw, 520px);
+        bottom: clamp(8px, 1.2vh, 12px);
+    }
+}
+
+/* Nest Hub (1024x600) - Landscape */
+@media (min-width: 1024px) and (max-width: 1024px) and (min-height: 600px) and (max-height: 600px) {
+    .App {
+        max-width: 600px;
+        padding: clamp(10px, 1.5vw, 15px);
+    }
+
+    .header {
+        top: clamp(8px, 1.5vh, 12px);
+    }
+
+    .board {
+        margin-top: clamp(50px, 10vh, 80px);
+        margin-bottom: clamp(6px, 1.2vh, 10px);
+        gap: clamp(4px, 0.8vw, 6px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(2.5rem, 5vw, 3rem);
+    }
+
+    .App {
+        padding-top: clamp(60px, 11vh, 90px);
+    }
+
+    .row {
+        gap: clamp(4px, 0.8vw, 6px);
+    }
+
+    .tile {
+        width: clamp(52px, 10vw, 58px);
+        height: clamp(52px, 10vw, 58px);
+        font-size: clamp(2rem, 4.5vw, 2.3rem);
+    }
+}
+
+/* Nest Hub Max (1280x800) - Landscape */
+@media (min-width: 1280px) and (max-width: 1280px) and (min-height: 800px) and (max-height: 800px) {
+    .App {
+        max-width: 650px;
+        padding: clamp(12px, 1.5vw, 18px);
+    }
+
+    .header {
+        top: clamp(10px, 1.8vh, 15px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(3rem, 5.5vw, 3.5rem);
+    }
+
+    .board {
+        margin-top: clamp(65px, 13vh, 100px);
+        margin-bottom: clamp(8px, 1.5vh, 12px);
+    }
+
+    .App {
+        padding-top: clamp(75px, 14vh, 105px);
+    }
+
+    .tile {
+        width: clamp(55px, 10.5vw, 60px);
+        height: clamp(55px, 10.5vw, 60px);
+        font-size: clamp(2.2rem, 4.8vw, 2.5rem);
+    }
+
+    .virtual-keyboard {
+        width: clamp(600px, 90vw, 650px);
+        bottom: clamp(10px, 1.8vh, 15px);
+    }
+}
+
+/* Laptop (1366x768) - Most common laptop resolution */
+@media (min-width: 1366px) and (max-width: 1366px) and (min-height: 768px) and (max-height: 768px) {
+    .App {
+        max-width: 600px;
+        padding: clamp(6px, 1vw, 10px) !important;
+        padding-top: clamp(45px, 8vh, 70px) !important; /* Minimal top padding */
+        padding-bottom: 0 !important;
+        height: calc(100vh - 180px) !important; /* Force specific height to prevent overlap */
+    }
+
+    .leaderboard-container {
+        width: clamp(260px, 19vw, 280px);
+        right: clamp(15px, 1.5vw, 20px);
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .header {
+        top: clamp(5px, 1vh, 8px) !important; /* Minimal top position */
+    }
+
+    .title-bitcount {
+        font-size: clamp(1.8rem, 3.5vw, 2.4rem) !important; /* Even smaller title */
+        line-height: 1.05 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .board {
+        margin-top: clamp(35px, 7vh, 60px) !important; /* Minimal top margin */
+        margin-bottom: clamp(50px, 7.5vh, 65px) !important; /* Very large bottom margin - ensure space above keyboard */
+        gap: clamp(1px, 0.3vw, 2px) !important; /* Minimal gap between rows */
+        max-height: calc(100vh - 320px) !important; /* Limit board height */
+    }
+
+    .row {
+        gap: clamp(1px, 0.3vw, 2px) !important; /* Minimal gap between tiles */
+    }
+
+    .tile {
+        width: clamp(38px, 7.5vw, 44px) !important; /* Even smaller tiles */
+        height: clamp(38px, 7.5vw, 44px) !important;
+        font-size: clamp(1.4rem, 3vw, 1.7rem) !important; /* Smaller font */
+        border-width: clamp(2px, 0.25vw, 2.5px) !important; /* Thinner borders */
+    }
+
+    .virtual-keyboard {
+        width: clamp(580px, 88vw, 620px) !important;
+        bottom: clamp(4px, 1vh, 8px) !important; /* Very close to bottom */
+        max-height: clamp(110px, 16vh, 140px) !important; /* Even smaller keyboard */
+        padding: clamp(1px, 0.3vw, 2px) clamp(1px, 0.15vw, 1.5px) !important; /* Minimal padding */
+    }
+
+    .key-btn {
+        height: clamp(28px, 5.5vh, 34px) !important; /* Even smaller keys */
+        padding: clamp(4px, 0.6vw, 6px) clamp(1px, 0.3vw, 2px) !important;
+        font-size: clamp(0.7rem, 1.4vw, 0.8rem) !important;
+        min-width: clamp(16px, 3vw, 20px) !important;
+        margin: 0 clamp(0.5px, 0.15vw, 1.5px) !important;
+    }
+
+    .key-wide {
+        max-width: clamp(40px, 8vw, 45px) !important;
+        font-size: clamp(0.6rem, 1.2vw, 0.7rem) !important;
+    }
+
+    .keyboard-row {
+        margin-bottom: clamp(0.5px, 0.2vw, 1.5px) !important; /* Minimal row spacing */
+    }
+}
+
+/* Ensure touch targets are at least 44px on all touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .help-icon, .login-btn, .user-profile-icon {
+        min-width: 48px !important;
+        min-height: 48px !important;
+    }
+
+    .key-btn {
+        min-height: 48px !important;
+        padding: 12px 8px !important;
+    }
+
+    .tile {
+        min-width: 40px !important;
+        min-height: 40px !important;
+    }
+
+    .primary-btn, .secondary-btn {
+        min-height: 48px !important;
+        min-width: 100px !important;
+    }
+}
+
+/* Tablet touch targets (larger buttons) */
+@media (min-width: 768px) and (hover: none) and (pointer: coarse) {
+    .help-icon, .login-btn, .user-profile-icon {
+        min-width: 52px !important;
+        min-height: 52px !important;
+    }
+
+    .key-btn {
+        min-height: 52px !important;
+        padding: 14px 10px !important;
+    }
+}
+
+/* Portrait orientation adjustments */
+@media (orientation: portrait) and (max-height: 600px) {
+    /* Short portrait screens (like some phones in landscape) */
+    .App {
+        padding: clamp(4px, 1vw, 8px);
+        padding-top: clamp(5px, 1.2vh, 8px);
+    }
+
+    .header {
+        top: clamp(5px, 1.2vh, 12px);
+    }
+
+    .board {
+        margin-top: clamp(40px, 8vh, 65px);
+    }
+
+    .App {
+        padding-top: clamp(50px, 9vh, 75px);
+    }
+
+    .title-bitcount {
+        font-size: clamp(1.5rem, 4.5vw, 2.2rem);
+        line-height: 1.1;
+    }
+
+    .board {
+        margin-bottom: clamp(4px, 0.8vh, 8px);
+        gap: clamp(2px, 0.6vw, 4px);
+    }
+
+    .row {
+        gap: clamp(2px, 0.6vw, 4px);
+    }
+
+    .tile {
+        width: clamp(36px, 9.5vw, 48px);
+        height: clamp(36px, 9.5vw, 48px);
+        font-size: clamp(1.3rem, 3.8vw, 1.9rem);
+    }
+
+    .virtual-keyboard {
+        bottom: clamp(4px, 0.8vh, 8px);
+        max-height: clamp(120px, 20vh, 160px);
+    }
+
+    .leaderboard-container {
+        display: none !important;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Increase touch targets for touch devices */
+    .key-btn {
+        min-height: clamp(44px, 9vh, 52px);
+        margin: 0 clamp(2px, 0.4vw, 3px);
+    }
+
+    .tile {
+        min-width: clamp(44px, 10vw, 60px);
+        min-height: clamp(44px, 10vw, 60px);
+    }
+
+    /* Larger icons for touch */
+    .help-icon, .user-profile-icon {
+        width: clamp(40px, 8vw, 50px);
+        height: clamp(40px, 8vw, 50px);
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .login-btn {
+        min-height: 44px;
+        min-width: 80px;
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Ensure crisp borders on high-DPI screens */
+    .tile {
+        border-width: clamp(2px, 0.6vw, 4px);
+    }
+    
+    .key-btn, .modal-overlay > * {
+        border-width: clamp(1px, 0.3vw, 2px);
+    }
+}
+
+/* Focus states for accessibility */
+.key-btn:focus,
+.help-icon:focus,
+.login-btn:focus,
+.user-profile-icon:focus {
+    outline: 2px solid var(--color-yellow);
+    outline-offset: 2px;
+}
+
+.tile:focus {
+    outline: 2px solid var(--color-green);
+    outline-offset: 1px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark mode preference support */
+@media (prefers-color-scheme: dark) {
+    body:not(.light-theme) {
+        background-color: #000000;
+        color: #ffffff;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    body.light-theme {
+        background-color: #fcdb6d;
+        color: #000000;
+    }
+}
+
+/* Safe area support for devices with notches */
+@supports (padding: max(0px)) {
+    .App {
+        padding-left: max(10px, env(safe-area-inset-left));
+        padding-right: max(10px, env(safe-area-inset-right));
+        padding-top: max(10px, env(safe-area-inset-top));
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+
+    .modal-overlay {
+        padding-left: max(10px, env(safe-area-inset-left));
+        padding-right: max(10px, env(safe-area-inset-right));
+        padding-top: max(10px, env(safe-area-inset-top));
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Print styles (hide interactive elements) */
+@media print {
+    .help-icon, .login-btn, .user-profile-icon,
+    .virtual-keyboard, .leaderboard-container {
+        display: none !important;
+    }
+
+    .App {
+        max-width: none;
+        padding: 0;
+    }
+
+    body {
+        background: white !important;
+        color: black !important;
+    }
+}
+
+/* ==========================================
+   UNIVERSAL RESPONSIVE SYSTEM
+   Comprehensive coverage for all screen resolutions
+   ========================================== */
+
+/* Extra Small Devices (320px - 375px) - Small phones */
+@media (min-width: 320px) and (max-width: 375px) {
+    .tile {
+        width: clamp(36px, 9.5vw, 40px) !important;
+        height: clamp(36px, 9.5vw, 40px) !important;
+        font-size: clamp(1.3rem, 3.5vw, 1.6rem) !important;
+    }
+    
+    .title-bitcount {
+        font-size: clamp(1.5rem, 4vw, 2rem) !important;
+    }
+    
+    .virtual-keyboard {
+        width: clamp(280px, 92vw, 360px) !important;
+        max-height: clamp(110px, 20vh, 140px) !important;
+    }
+}
+
+/* Small Devices (376px - 480px) - Standard phones */
+@media (min-width: 376px) and (max-width: 480px) {
+    .tile {
+        width: clamp(38px, 10vw, 45px) !important;
+        height: clamp(38px, 10vw, 45px) !important;
+        font-size: clamp(1.4rem, 3.8vw, 1.8rem) !important;
+    }
+}
+
+/* Medium Devices (481px - 767px) - Large phones / Small tablets */
+@media (min-width: 481px) and (max-width: 767px) {
+    .tile {
+        width: clamp(42px, 10.5vw, 50px) !important;
+        height: clamp(42px, 10.5vw, 50px) !important;
+        font-size: clamp(1.6rem, 4.2vw, 2rem) !important;
+    }
+    
+    .board {
+        margin-bottom: clamp(12px, 2.5vh, 18px) !important;
+    }
+}
+
+/* Tablets (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .tile {
+        width: clamp(48px, 11vw, 56px) !important;
+        height: clamp(48px, 11vw, 56px) !important;
+        font-size: clamp(1.9rem, 4.5vw, 2.2rem) !important;
+    }
+    
+    .board {
+        margin-bottom: clamp(15px, 3vh, 22px) !important;
+    }
+    
+    .virtual-keyboard {
+        max-height: clamp(150px, 24vh, 180px) !important;
+    }
+}
+
+/* Small Laptops (1024px - 1279px) */
+@media (min-width: 1024px) and (max-width: 1279px) {
+    .tile {
+        width: clamp(50px, 11.5vw, 58px) !important;
+        height: clamp(50px, 11.5vw, 58px) !important;
+        font-size: clamp(2rem, 4.8vw, 2.3rem) !important;
+    }
+}
+
+/* Standard Laptops (1280px - 1439px) */
+@media (min-width: 1280px) and (max-width: 1439px) {
+    .tile {
+        width: clamp(52px, 12vw, 60px) !important;
+        height: clamp(52px, 12vw, 60px) !important;
+        font-size: clamp(2.1rem, 5vw, 2.4rem) !important;
+    }
+}
+
+/* Large Laptops (1440px - 1919px) */
+@media (min-width: 1440px) and (max-width: 1919px) {
+    .tile {
+        width: clamp(54px, 12.5vw, 60px) !important;
+        height: clamp(54px, 12.5vw, 60px) !important;
+        font-size: clamp(2.2rem, 5.2vw, 2.5rem) !important;
+    }
+}
+
+/* Full HD Desktops (1920px - 2559px) */
+@media (min-width: 1920px) and (max-width: 2559px) {
+    .tile {
+        width: clamp(56px, 13vw, 60px) !important;
+        height: clamp(56px, 13vw, 60px) !important;
+        font-size: clamp(2.3rem, 5.5vw, 2.5rem) !important;
+    }
+    
+    .board {
+        margin-bottom: clamp(18px, 3.5vh, 25px) !important;
+    }
+}
+
+/* 2K / QHD Displays (2560px - 3839px) */
+@media (min-width: 2560px) and (max-width: 3839px) {
+    .tile {
+        width: clamp(58px, 13.5vw, 60px) !important;
+        height: clamp(58px, 13.5vw, 60px) !important;
+        font-size: clamp(2.4rem, 5.8vw, 2.5rem) !important;
+    }
+    
+    .virtual-keyboard {
+        max-height: clamp(180px, 26vh, 200px) !important;
+    }
+}
+
+/* 4K / UHD Displays (3840px+) */
+@media (min-width: 3840px) {
+    .tile {
+        width: 60px !important;
+        height: 60px !important;
+        font-size: 2.5rem !important;
+    }
+    
+    .board {
+        margin-bottom: clamp(20px, 4vh, 30px) !important;
+    }
+    
+    .virtual-keyboard {
+        max-height: 200px !important;
+    }
+}
+
+/* Aspect Ratio Adjustments */
+/* Wide screens (16:9, 21:9, etc.) */
+@media (min-aspect-ratio: 16/9) {
+    .board {
+        margin-bottom: clamp(10px, 2vh, clamp(15px, 3vh, 25px)) !important;
+    }
+}
+
+/* Tall screens (portrait tablets, phones) */
+@media (max-aspect-ratio: 3/4) {
+    .tile {
+        width: clamp(36px, min(9vw, 9vh), 50px) !important;
+        height: clamp(36px, min(9vw, 9vh), 50px) !important;
+    }
+    
+    .board {
+        margin-bottom: clamp(15px, 3vh, 25px) !important;
+    }
+}
+
+/* Very short screens (landscape phones) */
+@media (max-height: 500px) {
+    .tile {
+        width: clamp(32px, 8vw, 40px) !important;
+        height: clamp(32px, 8vw, 40px) !important;
+        font-size: clamp(1.2rem, 3vw, 1.5rem) !important;
+    }
+    
+    .title-bitcount {
+        font-size: clamp(1.2rem, 3.5vw, 1.8rem) !important;
+    }
+    
+    .virtual-keyboard {
+        max-height: clamp(100px, 18vh, 130px) !important;
+    }
+    
+    .board {
+        margin-bottom: clamp(20px, 4vh, 30px) !important;
+    }
+}
+
+/* Very tall screens (ultra-wide monitors) */
+@media (min-height: 1200px) {
+    .board {
+        margin-bottom: clamp(25px, 4vh, 35px) !important;
+    }
+    
+    .virtual-keyboard {
+        max-height: clamp(180px, 25vh, 200px) !important;
+    }
+}
+
+.help-icon { left: 20px; font-size: 1.5rem; }
+.login-btn, .user-profile-icon { right: 20px; border-radius: 20px; width: auto; padding: 0 15px; }

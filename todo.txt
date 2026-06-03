@@ -1,7 +1,0 @@
-change rules.
-better UI/UX
-theme toggle.
-EOD feature
-points system.
-competition system
-connect to portfolio and viseversa!!
