@@ -1,6 +1,7 @@
-Update rules
-Meaningful words
-points system for 0 points(more than 12 seconds.
-signup and login highly secure auth page
-Leaderboard
-deployment
+change rules.
+better UI/UX
+theme toggle.
+EOD feature
+points system.
+competition system
+connect to portfolio and viseversa!!
